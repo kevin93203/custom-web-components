@@ -433,6 +433,7 @@ class DataTable extends LitElement {
       background: var(--hover-color);
       border-color: var(--text-light);
       transform: translateY(-1px);
+      color: var(--text-color);
     }
 
     .pagination button:disabled {
