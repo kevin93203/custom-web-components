@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Lit 表格元件（含自動定義欄位）</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+  <script type="module" src="DataTable.js"></script>
+</head>
+
+<body>
+  <data-table title="所有使用者" base-api-url="http://localhost:3000" list-endpoint="/users" create-endpoint="/users"
+    update-endpoint="/users" delete-endpoint="/users" schema-endpoint="/users_schema" page-size="5" protected
+    password="pp"></data-table>
+</body>
+
+</html>
