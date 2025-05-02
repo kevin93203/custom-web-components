@@ -129,6 +129,17 @@ class DataTable extends LitElement {
       transform: translateY(0);
     }
 
+    button[disabled], 
+    input[disabled], 
+    select[disabled] {
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+
+    th[disabled] {
+      cursor: not-allowed !important;
+    }
+
     .btn-primary {
       background-color: var(--primary-color);
       color: white;
@@ -388,6 +399,7 @@ class DataTable extends LitElement {
   }
 
   handleSort(column) {
+    if (this.loading) return; // 如果正在載入中，禁止排序
     if (this.sortColumn === column) {
       this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
     } else {
@@ -397,6 +409,7 @@ class DataTable extends LitElement {
   }
 
   handleEdit(index) {
+    if (this.loading) return; // 如果正在載入中，禁止編輯
     this.editingIndex = index;
     this.editingRow = { ...this.filteredData[index] };
     this.isNewRow = false;
@@ -417,6 +430,7 @@ class DataTable extends LitElement {
   }
 
   async handleSave(index) {
+    if (this.loading) return; // 如果正在載入中，禁止儲存
     if (!this.validateForm()) {
       this.requestUpdate();
       return;
@@ -477,6 +491,7 @@ class DataTable extends LitElement {
   }
 
   handleCancel() {
+    if (this.loading) return; // 如果正在載入中，禁止取消
     // If adding a new row and user cancels, remove the temporary row
     if (this.isNewRow) {
       this.data = this.data.filter(row => !row.id.toString().startsWith('temp-'));
@@ -487,6 +502,7 @@ class DataTable extends LitElement {
   }
 
   async handleDelete(index) {
+    if (this.loading) return; // 如果正在載入中，禁止刪除
     if (!confirm('Are you sure you want to delete this record?')) return;
 
     const id = this.filteredData[index].id;
@@ -501,6 +517,7 @@ class DataTable extends LitElement {
   }
 
   handleNew() {
+    if (this.loading) return; // 如果正在載入中，禁止新增
     // Check if already editing a new row
     if (this.isNewRow) return;
 
@@ -521,6 +538,7 @@ class DataTable extends LitElement {
   }
 
   exportToCSV() {
+    if (this.loading) return; // 如果正在載入中，禁止匯出
     const exportData = this.filteredData.length > 0 ? this.filteredData : this.data;
     if (exportData.length === 0) return;
 
@@ -542,8 +560,14 @@ class DataTable extends LitElement {
     link.click();
   }
 
-  renderInputField(field, value) {
+  renderInputField(field, value, isLoading) {
     const key = field.key;
+    const commonProps = {
+      disabled: isLoading,
+      required: field.required,
+      class: field.required && (value === null || value === '') ? 'invalid' : ''
+    };
+
     switch (field.type) {
       case 'number':
         return html`
@@ -552,10 +576,9 @@ class DataTable extends LitElement {
               type="number"
               .value=${value !== null ? value : ''}
               @input=${e => this.handleInput(key, e)}
-              ?required=${field.required}
               min=${field.min !== undefined ? field.min : ''}
               max=${field.max !== undefined ? field.max : ''}
-              class=${field.required && (value === null || value === '') ? 'invalid' : ''}
+              ...=${commonProps}
             />
             ${field.required && (value === null || value === '') ? html`<div class="error-message">${field.label}為必填欄位</div>` : ''}
           </div>
@@ -567,6 +590,7 @@ class DataTable extends LitElement {
               type="checkbox"
               ?checked=${value}
               @change=${e => this.handleInput(key, e)}
+              ?disabled=${isLoading}
             />
           </div>
         `;
@@ -577,8 +601,7 @@ class DataTable extends LitElement {
               type="date"
               .value=${value || ''}
               @input=${e => this.handleInput(key, e)}
-              ?required=${field.required}
-              class=${field.required && (value === null || value === '') ? 'invalid' : ''}
+              ...=${commonProps}
             />
             ${field.required && (value === null || value === '') ? html`<div class="error-message">${field.label}為必填欄位</div>` : ''}
           </div>
@@ -586,7 +609,10 @@ class DataTable extends LitElement {
       case 'select':
         return html`
           <div class="field">
-            <select @change=${e => this.handleInput(key, e)}>
+            <select 
+              @change=${e => this.handleInput(key, e)}
+              ?disabled=${isLoading}
+            >
               <option value="" ?selected=${value === null || value === ''}>Select...</option>
               ${field.options.map(option => html`
                 <option value=${option.value} ?selected=${value === option.value}>
@@ -603,9 +629,8 @@ class DataTable extends LitElement {
               type=${field.type || 'text'}
               .value=${value !== null ? value : ''}
               @input=${e => this.handleInput(key, e)}
-              ?required=${field.required}
               maxlength=${field.maxLength || ''}
-              class=${field.required && (value === null || value === '') ? 'invalid' : ''}
+              ...=${commonProps}
             />
             ${field.required && (value === null || value === '') ? html`<div class="error-message">${field.label}為必填欄位</div>` : ''}
           </div>
@@ -711,19 +736,29 @@ class DataTable extends LitElement {
               style="width: 100%;"
               type="text" 
               .value=${this.filterText} 
-              @input=${e => this.filterText = e.target.value}
+              @input=${e => !this.loading && (this.filterText = e.target.value)}
               placeholder="Search..."
+              ?disabled=${this.loading}
             />
           </div>
           ${showControls ? html`
-            <button class="btn-primary" @click=${() => this.withPasswordProtection(() => this.handleNew())}>
+            <button class="btn-primary" 
+              @click=${() => this.withPasswordProtection(() => this.handleNew())}
+              ?disabled=${this.loading}
+            >
                 <i class="fas fa-plus"></i> Add New
             </button>
           ` : ''}
-          <button class="btn-primary" @click=${() => this.exportToCSV()}>
+          <button class="btn-primary" 
+            @click=${() => this.exportToCSV()}
+            ?disabled=${this.loading}
+          >
               <i class="fas fa-file-csv"></i> Export CSV
-            </button>
-          <button class="btn-primary" @click=${() => this.fetchSchemaAndData()}>
+          </button>
+          <button class="btn-primary" 
+            @click=${() => this.fetchSchemaAndData()}
+            ?disabled=${this.loading}
+          >
             <i class="fas fa-sync-alt"></i> Reload
           </button>
         </div>
@@ -743,8 +778,9 @@ class DataTable extends LitElement {
                 <tr>
                   ${visibleSchema.map(field => html`
                     <th 
-                      @click=${() => this.handleSort(field.key)}
+                      @click=${() => !this.loading && this.handleSort(field.key)}
                       class=${this.sortColumn === field.key ? `sorted-${this.sortDirection}` : ''}
+                      style=${this.loading ? 'cursor: not-allowed;' : ''}
                     >
                       ${this.renderTypeIcon(field.type)} ${field.label || field.key}
                     </th>
@@ -758,7 +794,7 @@ class DataTable extends LitElement {
                     ${visibleSchema.map(field => html`
                       <td>
                         ${this.editingIndex === index ?
-                          this.renderInputField(field, this.editingRow[field.key]) :
+                          html`${this.renderInputField(field, this.editingRow[field.key], this.loading)}` :
                           field.type === 'boolean'
                             ? (row[field.key] ? html`<i class="fas fa-check text-success"></i>` : html`<i class="fas fa-times text-danger"></i>`)
                             : (row[field.key] !== null ? row[field.key] : '')}
@@ -768,18 +804,30 @@ class DataTable extends LitElement {
                       <div class="actions">
                         ${this.editingIndex === index ?
                           html`
-                            <button class="btn-primary" @click=${() => this.withPasswordProtection(() => this.handleSave(index))}>
+                            <button class="btn-primary" 
+                              @click=${() => this.withPasswordProtection(() => this.handleSave(index))}
+                              ?disabled=${this.loading}
+                            >
                               <i class="fas fa-save"></i> Save
                             </button>
-                            <button class="btn-icon" @click=${this.handleCancel}>
+                            <button class="btn-icon" 
+                              @click=${this.handleCancel}
+                              ?disabled=${this.loading}
+                            >
                               <i class="fas fa-times"></i>
                             </button>
                           ` :
                           html`
-                            <button class="btn-icon btn-edit" @click=${() => this.withPasswordProtection(() => this.handleEdit(index))}>
+                            <button class="btn-icon btn-edit" 
+                              @click=${() => this.withPasswordProtection(() => this.handleEdit(index))}
+                              ?disabled=${this.loading}
+                            >
                               <i class="fas fa-edit"></i>
                             </button>
-                            <button class="btn-icon btn-delete" @click=${() => this.withPasswordProtection(() => this.handleDelete(index))}>
+                            <button class="btn-icon btn-delete" 
+                              @click=${() => this.withPasswordProtection(() => this.handleDelete(index))}
+                              ?disabled=${this.loading}
+                            >
                               <i class="fas fa-trash-alt"></i>
                             </button>
                           `}
