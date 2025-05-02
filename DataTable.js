@@ -59,7 +59,7 @@ class DataTable extends LitElement {
   static styles = css`
     :host {
       display: block;
-      font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
       color: var(--text-color);
       padding: 1.5rem;
       max-width: 1200px;
@@ -287,6 +287,7 @@ class DataTable extends LitElement {
       cursor: pointer;
       transition: background-color 0.2s;
       user-select: none;
+      white-space: nowrap;
     }
 
     th:hover:not([disabled]) {
