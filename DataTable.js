@@ -1,4 +1,4 @@
-import {LitElement, html, css} from 'https://cdn.jsdelivr.net/gh/lit/dist@3/core/lit-core.min.js';
+import { LitElement, html, css } from 'https://cdn.jsdelivr.net/gh/lit/dist@3/core/lit-core.min.js';
 
 class DataTable extends LitElement {
   connectedCallback() {
@@ -685,10 +685,13 @@ class DataTable extends LitElement {
             <button class="btn-primary" @click=${() => this.withPasswordProtection(() => this.handleNew())}>
               <i class="fas fa-plus"></i> Add New
             </button>
-            <button class="btn-primary" @click=${() => this.withPasswordProtection(() => this.exportToCSV())}>
+          ` : ''}
+          <button class="btn-primary" @click=${() => this.exportToCSV()}>
               <i class="fas fa-file-csv"></i> Export CSV
             </button>
-          ` : ''}
+          <button class="btn-primary" @click=${() => this.fetchSchemaAndData()}>
+            <i class="fas fa-sync-alt"></i> Reload
+          </button>
         </div>
         <div class="empty-state">
           <i class="fas fa-database" style="font-size: 2rem; margin-bottom: 1rem;"></i>
@@ -725,10 +728,13 @@ class DataTable extends LitElement {
             <button class="btn-primary" @click=${() => this.withPasswordProtection(() => this.handleNew())}>
                 <i class="fas fa-plus"></i> Add New
             </button>
-            <button class="btn-primary" @click=${() => this.withPasswordProtection(() => this.exportToCSV())}>
+          ` : ''}
+          <button class="btn-primary" @click=${() => this.exportToCSV()}>
               <i class="fas fa-file-csv"></i> Export CSV
             </button>
-          ` : ''}
+          <button class="btn-primary" @click=${() => this.fetchSchemaAndData()}>
+            <i class="fas fa-sync-alt"></i> Reload
+          </button>
         </div>
         
         <div class="table-wrapper">
@@ -826,18 +832,6 @@ class DataTable extends LitElement {
   async connectedCallback() {
     super.connectedCallback();
     await this.fetchSchemaAndData();
-  }
-
-  // Reload data
-  async refreshData() {
-    try {
-      const res = await fetch('http://localhost:3000/rows');
-      if (!res.ok) throw new Error('Could not reload data');
-      const data = await res.json();
-      this.data = data;
-    } catch (error) {
-      console.error('Data reload failed:', error);
-    }
   }
 }
 
