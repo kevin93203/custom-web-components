@@ -121,6 +121,13 @@ class DataTable extends LitElement {
       position: relative;
     }
 
+    .search-container input[type="text"] {
+      width: 100%;
+      min-width: 0; /* 允許容器收縮 */
+      max-width: 100%;
+      padding: 0.5rem 0.75rem 0.5rem 2.25rem;
+    }
+
     .search-group {
       display: flex;
       align-items: center;
@@ -159,7 +166,6 @@ class DataTable extends LitElement {
     }
 
     input[type="text"] {
-      width: 100%;
       padding: 0.5rem 0.75rem 0.5rem 2.25rem;
       border: 1px solid var(--border-color);
       border-radius: var(--radius-sm);
@@ -311,13 +317,8 @@ class DataTable extends LitElement {
       padding: 0.75rem 1rem;
       text-align: left;
       border-bottom: 1px solid var(--border-color);
+      border-left: 1px solid var(--border-color);
       font-size: 0.875rem;
-    }
-
-    .field {
-      width: 100%;
-      position: relative;
-      margin: -0.5rem 0; /* 調整輸入框的外邊距，使其在編輯模式下也能保持垂直置中 */
     }
 
     .field input,
@@ -332,7 +333,6 @@ class DataTable extends LitElement {
     }
 
     .field textarea {
-      width: 100%;
       padding: 0.5rem 0.75rem;
       border: 1px solid var(--border-color);
       border-radius: var(--radius-sm);
@@ -917,6 +917,7 @@ class DataTable extends LitElement {
               .value=${value !== null ? value : ''}
               @input=${e => this.handleInput(key, e)}
               maxlength=${field.maxLength || ''}
+              size=${value.length || 1}
               ...=${commonProps}
             />
             ${html`<div class="error-message">${field.required && (value === null || value === '') ? `${field.label}為必填欄位`:``}</div>`}
