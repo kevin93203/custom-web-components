@@ -92,6 +92,7 @@ class DataTable extends LitElement {
 
     .controls {
       display: flex;
+      flex-wrap: wrap;
       justify-content: space-between;
       align-items: center;
       margin-bottom: 1.25rem;
@@ -106,30 +107,33 @@ class DataTable extends LitElement {
     .controls-group {
       display: flex;
       align-items: center;
+      justify-content: flex-end;
+      flex-wrap: wrap;
       gap: 0.5rem;
-    }
-
-    .controls-divider {
-      width: 1px;
-      height: 24px;
-      background: var(--border-color);
-      margin: 0 0.5rem;
+      flex: 1; // 讓 controls-group 佔滿可用空間
     }
 
     .search-container {
+      display: flex;
+      flex: 1; /* 讓 search-container 在 search-group 中佔滿剩餘空間 */
+      min-width: 0; /* 允許容器收縮 */
       position: relative;
-      min-width: 240px;
     }
 
     .search-group {
       display: flex;
       align-items: center;
       gap: 0.5rem;
-      min-width: 400px;
+      flex: 1; /* 讓 search-group 在 controls-group 中佔滿剩餘空間 */
+      min-width: 0; /* 允許容器收縮 */
     }
 
     .search-field-select {
-      min-width: 120px;
+      box-sizing: border-box;
+      width: auto;
+      min-width: 0; /* 允許容器收縮 */
+      max-width: 180px;
+      flex-shrink: 1; /* 允許收縮 */
       padding: 0.5rem;
       border: 1px solid var(--border-color);
       border-radius: var(--radius-sm);
@@ -465,6 +469,66 @@ class DataTable extends LitElement {
       border-radius: var(--radius);
       border: 1px solid var(--border-color);
       color: var(--text-light);
+    }
+
+    /* RWD 樣式 */
+    @media (max-width: 768px) {
+      .controls {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1rem;
+      }
+
+      .controls-group {
+        width: 100%;
+      }
+
+      .search-group {
+        width: 100%;
+        flex-wrap: nowrap;
+      }
+
+      .search-container {
+        flex: 1;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .search-group {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .search-field-select {
+        max-width: none;
+        width: 100%;
+      }
+
+      .controls-group:last-child {
+        justify-content: space-between;
+      }
+
+      button.btn-secondary span {
+        display: none;
+      }
+
+      button.btn-secondary i {
+        margin: 0;
+      }
+    }
+
+    /* 確保按鈕在小螢幕上的呈現 */
+    @media (max-width: 380px) {
+      .controls-group:last-child {
+        justify-content: center;
+        gap: 0.25rem;
+      }
+
+      button.btn-secondary {
+        padding: 0.5rem;
+        min-width: 36px;
+        width: 36px;
+      }
     }
   `;
 
@@ -994,8 +1058,6 @@ class DataTable extends LitElement {
             ${this.renderPasswordToggle()}
             ${this.renderSearchControls()}
           </div>
-
-          <div class="controls-divider"></div>
 
           <div class="controls-group">
             ${showControls ? html` <button class="btn-secondary" 
