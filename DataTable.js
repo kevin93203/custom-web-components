@@ -322,7 +322,6 @@ class DataTable extends LitElement {
 
     .field input,
     .field select {
-      width: 100%;
       padding: 0.5rem 0.75rem;
       border: 1px solid var(--border-color);
       border-radius: var(--radius-sm);
@@ -883,7 +882,7 @@ class DataTable extends LitElement {
               @change=${e => this.handleInput(key, e)}
               ?disabled=${isLoading}
             >
-              <option value="" ?selected=${value === null || value === ''}>Select...</option>
+              <option value="" ?selected=${value === null || value === ''}>請選擇</option>
               ${field.options.map(option => html`
                 <option value=${option.value} ?selected=${value === option.value}>
                   ${option.label}
@@ -1171,18 +1170,20 @@ class DataTable extends LitElement {
                     ${visibleSchema.map(field => html`
                       <td>
                         ${this.editingIndex === index ?
-        html`${this.renderInputField(field, this.editingRow[field.key], this.loading)}` :
-        field.type === 'boolean'
-          ? (row[field.key] ? html`<i class="fas fa-check text-success"></i>` : html`<i class="fas fa-times text-danger"></i>`)
-          : field.type === 'textarea'
-            ? html`<div class="multiline-text">${row[field.key]}</div>`
-            : (row[field.key] !== null ? row[field.key] : '')}
+                          html`${this.renderInputField(field, this.editingRow[field.key], this.loading)}` :
+                          field.type === 'boolean'
+                            ? (row[field.key] ? html`<i class="fas fa-check text-success"></i>` : html`<i class="fas fa-times text-danger"></i>`)
+                            : field.type === 'textarea'
+                              ? html`<div class="multiline-text">${row[field.key]}</div>`
+                              : field.type === 'select'
+                                ? html`${field.options.find(opt => opt.value === row[field.key])?.label || row[field.key]}`
+                                : (row[field.key] !== null ? row[field.key] : '')}
                       </td>
                     `)}
                     ${showControls ? html`<td>
                       <div class="actions">
                         ${this.editingIndex === index ?
-          html`
+                          html`
                             <button class="btn-primary" 
                               @click=${() => this.withPasswordProtection(() => this.handleSave(index))}
                               ?disabled=${this.loading}
@@ -1196,7 +1197,7 @@ class DataTable extends LitElement {
                               <i class="fas fa-times"></i>
                             </button>
                           ` :
-          html`
+                          html`
                             <button class="btn-icon btn-edit" 
                               @click=${() => this.withPasswordProtection(() => this.handleEdit(index))}
                               ?disabled=${this.loading}
