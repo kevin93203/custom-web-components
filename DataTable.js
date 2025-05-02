@@ -332,28 +332,57 @@ class DataTable extends LitElement {
     }
 
     .pagination {
-      margin-top: 1rem;
+      margin-top: 1.5rem;
       display: flex;
       justify-content: center;
       align-items: center;
-      gap: 1rem;
+      gap: 0.5rem;
       padding: 0.75rem;
     }
 
+    .pagination-info {
+      font-size: 0.875rem;
+      color: var(--text-light);
+      margin: 0 1rem;
+    }
+
     .pagination button {
-      background: transparent;
+      background: var(--surface-color);
       color: var(--text-color);
+      border: 1px solid var(--border-color);
+      min-width: 2.5rem;
+      height: 2.5rem;
+      border-radius: var(--radius-sm);
+      font-size: 0.875rem;
       font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 0.75rem;
+      transition: all 0.2s;
     }
 
     .pagination button:hover:not(:disabled) {
       background: var(--hover-color);
-      transform: none;
+      border-color: var(--text-light);
+      transform: translateY(-1px);
     }
 
     .pagination button:disabled {
+      background: var(--header-color);
       color: var(--text-light);
-      background: transparent;
+      cursor: not-allowed;
+    }
+
+    .pagination button.active {
+      background: var(--primary-color);
+      color: white;
+      border-color: var(--primary-color);
+    }
+
+    .pagination-pages {
+      display: flex;
+      gap: 0.25rem;
     }
   `;
 
@@ -395,8 +424,14 @@ class DataTable extends LitElement {
 
   handleEdit(index) {
     if (this.loading) return; // 如果正在載入中，禁止編輯
+    // 計算實際的數據索引
+    const actualIndex = (this.currentPage - 1) * this.pageSize + index;
+    const actualData = this.filteredData[actualIndex];
+    
+    if (!actualData) return; // 安全檢查
+    
     this.editingIndex = index;
-    this.editingRow = { ...this.filteredData[index] };
+    this.editingRow = { ...actualData };
     this.isNewRow = false;
   }
 
@@ -415,7 +450,7 @@ class DataTable extends LitElement {
   }
 
   async handleSave(index) {
-    if (this.loading) return; // 如果正在載入中，禁止儲存
+    if (this.loading) return;
     if (!this.validateForm()) {
       this.requestUpdate();
       return;
@@ -459,9 +494,13 @@ class DataTable extends LitElement {
 
         if (!res.ok) throw new Error('Failed to update data');
         const updatedRow = await res.json();
+        
+        // 找到原始數據中的索引位置
         const originalIndex = this.data.findIndex(item => item.id === id);
-        this.data[originalIndex] = updatedRow;
-        this.data = [...this.data];
+        if (originalIndex !== -1) {
+          this.data[originalIndex] = updatedRow;
+          this.data = [...this.data];
+        }
       }
 
       this.editingIndex = -1;
@@ -487,14 +526,28 @@ class DataTable extends LitElement {
   }
 
   async handleDelete(index) {
-    if (this.loading) return; // 如果正在載入中，禁止刪除
+    if (this.loading) return;
     if (!confirm('Are you sure you want to delete this record?')) return;
 
-    const id = this.filteredData[index].id;
+    // 計算實際的數據索引
+    const actualIndex = (this.currentPage - 1) * this.pageSize + index;
+    const actualData = this.filteredData[actualIndex];
+    
+    if (!actualData) return; // 安全檢查
+    
+    const id = actualData.id;
     try {
       const res = await fetch(`${this.apiConfig.baseApiUrl}${this.apiConfig.deleteEndpoint}/${id}`, { method: 'DELETE' });
       if (!res.ok) throw new Error('Failed to delete data');
+      
+      // 從原始數據中刪除
       this.data = this.data.filter(row => row.id !== id);
+      
+      // 如果當前頁變成空的，且不是第一頁，則自動跳轉到前一頁
+      const totalPages = Math.ceil(this.filteredData.length / this.pageSize);
+      if (this.currentPage > 1 && this.currentPage > totalPages) {
+        this.currentPage--;
+      }
     } catch (error) {
       console.error('Delete failed:', error);
       alert('Delete failed: ' + error.message);
@@ -637,16 +690,64 @@ class DataTable extends LitElement {
 
   renderPaginationControls() {
     const totalPages = Math.ceil(this.filteredData.length / this.pageSize);
+    const currentPage = this.currentPage;
+    
+    // 計算要顯示的頁碼範圍
+    let startPage = Math.max(1, currentPage - 2);
+    let endPage = Math.min(totalPages, startPage + 4);
+    
+    // 調整起始頁碼，確保總是顯示5個頁碼（如果有足夠的頁數）
+    if (endPage - startPage < 4) {
+      startPage = Math.max(1, endPage - 4);
+    }
+
+    // 生成頁碼按鈕
+    const pageButtons = [];
+    for (let i = startPage; i <= endPage; i++) {
+      pageButtons.push(html`
+        <button 
+          class=${i === currentPage ? 'active' : ''} 
+          @click=${() => this.currentPage = i}
+          ?disabled=${this.loading}
+        >${i}</button>
+      `);
+    }
 
     return html`
       <div class="pagination">
-        <button class="pagination-button" ?disabled=${this.currentPage === 1} @click=${() => this.currentPage--}>
-          ← Previous
+        <button 
+          ?disabled=${currentPage === 1 || this.loading}
+          @click=${() => this.currentPage = 1}
+        >
+          <i class="fas fa-angles-left"></i>
         </button>
-        <span>Page ${this.currentPage} of ${totalPages}</span>
-        <button class="pagination-button" ?disabled=${this.currentPage === totalPages} @click=${() => this.currentPage++}>
-          Next →
+        <button 
+          ?disabled=${currentPage === 1 || this.loading}
+          @click=${() => this.currentPage--}
+        >
+          <i class="fas fa-angle-left"></i>
         </button>
+        
+        <div class="pagination-pages">
+          ${pageButtons}
+        </div>
+
+        <button 
+          ?disabled=${currentPage === totalPages || this.loading}
+          @click=${() => this.currentPage++}
+        >
+          <i class="fas fa-angle-right"></i>
+        </button>
+        <button 
+          ?disabled=${currentPage === totalPages || this.loading}
+          @click=${() => this.currentPage = totalPages}
+        >
+          <i class="fas fa-angles-right"></i>
+        </button>
+        
+        <div class="pagination-info">
+          第 ${currentPage} 頁，共 ${totalPages} 頁
+        </div>
       </div>
     `;
   }
