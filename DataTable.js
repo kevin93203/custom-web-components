@@ -321,6 +321,13 @@ class DataTable extends LitElement {
       font-size: 0.875rem;
     }
 
+    .column-header {
+      display: flex; 
+      align-items: center; 
+      justify-content: space-between; 
+      gap: 0.5rem;
+    }
+
     .field input,
     .field select {
       padding: 0.5rem 0.75rem;
@@ -939,6 +946,22 @@ class DataTable extends LitElement {
     return icons[type] || '';
   }
 
+  renderColumnHeader(field) {
+    return html`
+      <div class="column-header">
+        <div>
+          ${this.renderTypeIcon(field.type)} ${field.label || field.key}
+        </div>
+        ${field.description ? html`
+          <i class="fas fa-info-circle" 
+             style="color: var(--text-light); cursor: help;" 
+             title="${field.description}">
+          </i>
+        ` : ''}
+      </div>
+    `;
+  }
+
   renderPaginationControls() {
     const totalPages = Math.ceil(this.filteredData.length / this.pageSize);
     const currentPage = this.currentPage;
@@ -1164,7 +1187,7 @@ class DataTable extends LitElement {
                       class=${this.sortColumn === field.key ? `sorted-${this.sortDirection}` : ''}
                       style=${this.loadingOrEditing ? 'cursor: not-allowed;' : ''}
                     >
-                      ${this.renderTypeIcon(field.type)} ${field.label || field.key}
+                      ${this.renderColumnHeader(field)}
                     </th>
                   `)}
                   ${showControls ? html`<th><i class="fas fa-cog"></i>操作</th>` : ''}
