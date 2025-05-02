@@ -198,7 +198,7 @@ class DataTable extends LitElement {
       transform: translateY(0);
     }
 
-    button[disabled] {
+    button[disabled], select[disabled], input[disabled] {
       cursor: not-allowed;
       opacity: 0.6;
     }
@@ -570,6 +570,10 @@ class DataTable extends LitElement {
       }
     }
   `;
+
+  get loadingOrEditing() {
+    return this.loading || this.editingIndex !== -1;
+  }
 
   get filteredData() {
     const keyword = this.filterText.toLowerCase();
@@ -954,7 +958,7 @@ class DataTable extends LitElement {
         <button 
           class=${i === currentPage ? 'active' : ''} 
           @click=${() => this.currentPage = i}
-          ?disabled=${this.loading}
+          ?disabled=${this.loadingOrEditing}
         >${i}</button>
       `);
     }
@@ -962,13 +966,13 @@ class DataTable extends LitElement {
     return html`
       <div class="pagination">
         <button 
-          ?disabled=${currentPage === 1 || this.loading}
+          ?disabled=${currentPage === 1 || this.loadingOrEditing}
           @click=${() => this.currentPage = 1}
         >
           <i class="fas fa-angles-left"></i>
         </button>
         <button 
-          ?disabled=${currentPage === 1 || this.loading}
+          ?disabled=${currentPage === 1 || this.loadingOrEditing}
           @click=${() => this.currentPage--}
         >
           <i class="fas fa-angle-left"></i>
@@ -979,13 +983,13 @@ class DataTable extends LitElement {
         </div>
 
         <button 
-          ?disabled=${currentPage === totalPages || this.loading}
+          ?disabled=${currentPage === totalPages || this.loadingOrEditing}
           @click=${() => this.currentPage++}
         >
           <i class="fas fa-angle-right"></i>
         </button>
         <button 
-          ?disabled=${currentPage === totalPages || this.loading}
+          ?disabled=${currentPage === totalPages || this.loadingOrEditing}
           @click=${() => this.currentPage = totalPages}
         >
           <i class="fas fa-angles-right"></i>
@@ -1021,7 +1025,7 @@ class DataTable extends LitElement {
         <select 
           class="search-field-select"
           @change=${e => this.filterColumn = e.target.value}
-          ?disabled=${this.loading}
+          ?disabled=${this.loadingOrEditing}
         >
           <option value="">搜尋全部欄位</option>
           ${visibleSchema.map(field => html`
@@ -1037,7 +1041,7 @@ class DataTable extends LitElement {
             .value=${this.filterText} 
             @input=${e => !this.loading && (this.filterText = e.target.value)}
             placeholder=${this.getSearchPlaceholder()}
-            ?disabled=${this.loading}
+            ?disabled=${this.loadingOrEditing}
           />
         </div>
       </div>
@@ -1047,7 +1051,7 @@ class DataTable extends LitElement {
   renderPasswordToggle() {
     if (!this.isPasswordProtected) return null;
     return html`
-      <button class="btn-icon" @click=${this.handlePasswordToggle.bind(this)}>
+      <button class="btn-icon" @click=${this.handlePasswordToggle.bind(this)} ?disabled=${this.loadingOrEditing}>
         ${this.passwordVerified ? html`<i class="fas fa-lock-open"></i>` : html`<i class="fas fa-lock"></i>`}
       </button>
     `;
@@ -1116,14 +1120,14 @@ class DataTable extends LitElement {
           <div class="controls-group">
             ${showControls ? html` <button class="btn-secondary" 
               @click=${() => this.withPasswordProtection(() => this.handleNew())}
-              ?disabled=${this.loading}
+              ?disabled=${this.loadingOrEditing}
             >
               <i class="fas fa-plus"></i>
               <span>新增</span>
             </button>` : ''}
             <button class="btn-secondary" 
               @click=${() => this.exportToCSV()}
-              ?disabled=${this.loading}
+              ?disabled=${this.loadingOrEditing}
               title="匯出 CSV"
             >
               <i class="fas fa-file-export"></i>
@@ -1131,7 +1135,7 @@ class DataTable extends LitElement {
             </button>
             <button class="btn-secondary" 
               @click=${() => this.fetchSchemaAndData()}
-              ?disabled=${this.loading}
+              ?disabled=${this.loadingOrEditing}
               title="重新載入資料"
             >
               <i class="fas fa-sync-alt"></i>
@@ -1155,9 +1159,9 @@ class DataTable extends LitElement {
                 <tr>
                   ${visibleSchema.map(field => html`
                     <th 
-                      @click=${() => !this.loading && this.handleSort(field.key)}
+                      @click=${() => !this.loadingOrEditing && this.handleSort(field.key)}
                       class=${this.sortColumn === field.key ? `sorted-${this.sortDirection}` : ''}
-                      style=${this.loading ? 'cursor: not-allowed;' : ''}
+                      style=${this.loadingOrEditing ? 'cursor: not-allowed;' : ''}
                     >
                       ${this.renderTypeIcon(field.type)} ${field.label || field.key}
                     </th>
