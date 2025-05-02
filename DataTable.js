@@ -379,6 +379,7 @@ class DataTable extends LitElement {
     .actions button {
       padding: 0.5rem;
       min-width: auto;
+      white-space: nowrap;
     }
 
     .actions .btn-primary {
@@ -1171,7 +1172,7 @@ class DataTable extends LitElement {
                               @click=${() => this.withPasswordProtection(() => this.handleSave(index))}
                               ?disabled=${this.loading}
                             >
-                              <i class="fas fa-save"></i> Save
+                              <i class="fas fa-save"></i> 儲存
                             </button>
                             <button class="btn-icon" 
                               @click=${this.handleCancel}
