@@ -1,14 +1,6 @@
 import { LitElement, html, css } from 'https://cdn.jsdelivr.net/gh/lit/dist@3/core/lit-core.min.js';
 
 class DataTable extends LitElement {
-  connectedCallback() {
-    super.connectedCallback();
-    const link = document.createElement('link');
-    link.rel = 'stylesheet';
-    link.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css';
-    document.head.appendChild(link);
-  }
-
   static properties = {
     title: { type: String },
     data: { type: Array },
@@ -44,12 +36,12 @@ class DataTable extends LitElement {
     this.editingIndex = -1;
     this.editingRow = {};
     this.isNewRow = false;
-    this.loading = true;
+    this.loading = true; // 確保初始值為 true
     this.currentPage = 1;
     this.pageSize = parseInt(this.getAttribute('page-size')) || 10;
     this.isPasswordProtected = this.hasAttribute('protected');
     this.passwordVerified = !this.isPasswordProtected;
-    this.password = this.getAttribute('password') || '123456'; // 預設密碼
+    this.password = this.getAttribute('password') || '123456';
 
     // Initialize API configuration from attributes
     this.apiConfig = {
@@ -253,7 +245,13 @@ class DataTable extends LitElement {
       gap: 0.75rem;
     }
 
-    .loading i {
+    .loading-fallback {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 2px solid var(--text-light);
+      border-radius: 50%;
+      border-top-color: transparent;
       animation: spin 1s linear infinite;
     }
 
@@ -334,6 +332,33 @@ class DataTable extends LitElement {
     .pagination button:active {
       transform: translateY(0);
     }
+
+    .loading-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(255, 255, 255, 0.8);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .loading-spinner {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 1rem 2rem;
+      background: white;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .table-container {
+      position: relative;
+    }
   `;
 
   get filteredData() {
@@ -408,6 +433,7 @@ class DataTable extends LitElement {
       return;
     }
 
+    this.loading = true;
     try {
       if (this.isNewRow) {
         // Remove temporary ID
@@ -445,6 +471,8 @@ class DataTable extends LitElement {
     } catch (error) {
       console.error('Save failed:', error);
       alert('Save failed: ' + error.message);
+    } finally {
+      this.loading = false;
     }
   }
 
@@ -649,68 +677,31 @@ class DataTable extends LitElement {
   }
 
   render() {
-    if (this.loading) {
-      return html`
-        <div class="loading">
-          <i class="fas fa-spinner"></i>
-          <span>Loading data...</span>
-        </div>
-      `;
-    }
-
     if (!this.schema.length) {
       return html`
         <div class="empty-state">
-          <i class="fas fa-exclamation-circle" style="font-size: 2rem; margin-bottom: 1rem;"></i>
-          <p>Could not load field definitions</p>
-        </div>
-      `;
-    }
-
-    if (!this.data.length) {
-      const showControls = !this.isPasswordProtected || this.passwordVerified;
-      return html`
-        <div class="controls">
-          ${this.renderPasswordToggle()}
-          <div style="position: relative; flex-grow: 1;">
-            <input 
-              style="width: 100%;"
-              type="text" 
-              .value=${this.filterText} 
-              @input=${e => this.filterText = e.target.value}
-              placeholder="Search..."
-            />
-          </div>
-          ${showControls ? html`
-            <button class="btn-primary" @click=${() => this.withPasswordProtection(() => this.handleNew())}>
-              <i class="fas fa-plus"></i> Add New
-            </button>
-          ` : ''}
-          <button class="btn-primary" @click=${() => this.exportToCSV()}>
-              <i class="fas fa-file-csv"></i> Export CSV
-            </button>
-          <button class="btn-primary" @click=${() => this.fetchSchemaAndData()}>
-            <i class="fas fa-sync-alt"></i> Reload
-          </button>
-        </div>
-        <div class="empty-state">
-          <i class="fas fa-database" style="font-size: 2rem; margin-bottom: 1rem;"></i>
-          <p>No data available</p>
+          ${this.loading ? html`
+            <div class="loading-overlay">
+              <div class="loading-spinner">
+                <span class="loading-fallback"></span>
+                <span>處理中...</span>
+              </div>
+            </div>
+          ` : html`
+            <i class="fas fa-exclamation-circle" style="font-size: 2rem; margin-bottom: 1rem;"></i>
+            <p>Could not load field definitions</p>
+          `}
         </div>
       `;
     }
 
     // Filter out hidden fields
     const visibleSchema = this.schema.filter(field => !field.hidden);
-
     const paginatedData = this.getPaginatedData();
     const showControls = !this.isPasswordProtected || this.passwordVerified;
 
     return html`
       <div>
-        <!-- Font Awesome 5 CSS (from CDN) -->
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-        
         <h2>${this.title}</h2>
         
         <div class="controls">
@@ -738,57 +729,67 @@ class DataTable extends LitElement {
         </div>
         
         <div class="table-wrapper">
-          <table>
-            <thead>
-              <tr>
-                ${visibleSchema.map(field => html`
-                  <th 
-                    @click=${() => this.handleSort(field.key)}
-                    class=${this.sortColumn === field.key ? `sorted-${this.sortDirection}` : ''}
-                  >
-                    ${this.renderTypeIcon(field.type)} ${field.label || field.key}
-                  </th>
-                `)}
-                ${showControls ? html`<th><i class="fas fa-cog"></i>操作</th>` : ''}
-              </tr>
-            </thead>
-            <tbody>
-              ${paginatedData.map((row, index) => html`
+          <div class="table-container">
+            ${this.loading ? html`
+              <div class="loading-overlay">
+                <div class="loading-spinner">
+                  <span class="loading-fallback"></span>
+                  <span>處理中...</span>
+                </div>
+              </div>
+            ` : ''}
+            <table>
+              <thead>
                 <tr>
                   ${visibleSchema.map(field => html`
-                    <td>
-                      ${this.editingIndex === index ?
-        this.renderInputField(field, this.editingRow[field.key]) :
-        field.type === 'boolean'
-          ? (row[field.key] ? html`<i class="fas fa-check text-success"></i>` : html`<i class="fas fa-times text-danger"></i>`)
-          : (row[field.key] !== null ? row[field.key] : '')}
-                    </td>
+                    <th 
+                      @click=${() => this.handleSort(field.key)}
+                      class=${this.sortColumn === field.key ? `sorted-${this.sortDirection}` : ''}
+                    >
+                      ${this.renderTypeIcon(field.type)} ${field.label || field.key}
+                    </th>
                   `)}
-                  ${showControls ? html`<td>
-                    <div class="actions">
-                      ${this.editingIndex === index ?
-          html`
-                          <button class="btn-primary" @click=${() => this.withPasswordProtection(() => this.handleSave(index))}>
-                            <i class="fas fa-save"></i> Save
-                          </button>
-                          <button class="btn-icon" @click=${this.handleCancel}>
-                            <i class="fas fa-times"></i>
-                          </button>
-                        ` :
-          html`
-                          <button class="btn-icon btn-edit" @click=${() => this.withPasswordProtection(() => this.handleEdit(index))}>
-                            <i class="fas fa-edit"></i>
-                          </button>
-                          <button class="btn-icon btn-delete" @click=${() => this.withPasswordProtection(() => this.handleDelete(index))}>
-                            <i class="fas fa-trash-alt"></i>
-                          </button>
-                        `}
-                    </div>
-                  </td>` : ''}
+                  ${showControls ? html`<th><i class="fas fa-cog"></i>操作</th>` : ''}
                 </tr>
-              `)}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                ${paginatedData.map((row, index) => html`
+                  <tr>
+                    ${visibleSchema.map(field => html`
+                      <td>
+                        ${this.editingIndex === index ?
+                          this.renderInputField(field, this.editingRow[field.key]) :
+                          field.type === 'boolean'
+                            ? (row[field.key] ? html`<i class="fas fa-check text-success"></i>` : html`<i class="fas fa-times text-danger"></i>`)
+                            : (row[field.key] !== null ? row[field.key] : '')}
+                      </td>
+                    `)}
+                    ${showControls ? html`<td>
+                      <div class="actions">
+                        ${this.editingIndex === index ?
+                          html`
+                            <button class="btn-primary" @click=${() => this.withPasswordProtection(() => this.handleSave(index))}>
+                              <i class="fas fa-save"></i> Save
+                            </button>
+                            <button class="btn-icon" @click=${this.handleCancel}>
+                              <i class="fas fa-times"></i>
+                            </button>
+                          ` :
+                          html`
+                            <button class="btn-icon btn-edit" @click=${() => this.withPasswordProtection(() => this.handleEdit(index))}>
+                              <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn-icon btn-delete" @click=${() => this.withPasswordProtection(() => this.handleDelete(index))}>
+                              <i class="fas fa-trash-alt"></i>
+                            </button>
+                          `}
+                      </div>
+                    </td>` : ''}
+                  </tr>
+                `)}
+              </tbody>
+            </table>
+          </div>
         </div>
         ${this.renderPaginationControls()}
       </div>
@@ -811,6 +812,7 @@ class DataTable extends LitElement {
 
   // Fetch schema and data from server
   async fetchSchemaAndData() {
+    this.loading = true;
     try {
       // Fetch schema
       const schemaRes = await fetch(`${this.apiConfig.baseApiUrl}${this.apiConfig.schemaEndpoint}`);
@@ -821,12 +823,30 @@ class DataTable extends LitElement {
       const dataRes = await fetch(`${this.apiConfig.baseApiUrl}${this.apiConfig.listEndpoint}`);
       if (!dataRes.ok) throw new Error('Failed to fetch data');
       this.data = await dataRes.json();
-
-      this.loading = false;
     } catch (error) {
       console.error('Error loading data:', error);
+    } finally {
       this.loading = false;
     }
+  }
+
+  createRenderRoot() {
+    // Create a shadow DOM root for the component
+    const root = this.attachShadow({ mode: 'open' });
+
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css';
+    
+    const head = document.createElement('head');
+    const style = document.createElement('style');
+    style.textContent = this.constructor.styles.cssText;
+
+    head.appendChild(link);
+    head.appendChild(style);
+    root.appendChild(head);
+
+    return root;
   }
 
   async connectedCallback() {
