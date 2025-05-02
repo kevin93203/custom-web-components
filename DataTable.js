@@ -321,6 +321,26 @@ class DataTable extends LitElement {
       color: var(--text-color);
     }
 
+    .field textarea {
+      width: 100%;
+      padding: 0.5rem 0.75rem;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      font-size: 0.875rem;
+      transition: all 0.2s;
+      background: var(--surface-color);
+      color: var(--text-color);
+      /* min-height: 60px; */
+      resize: vertical;
+      font-family: inherit;
+    }
+
+    .field textarea:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.1);
+    }
+
     .field input[type="checkbox"] {
       width: auto;
       margin: 0;
@@ -343,6 +363,11 @@ class DataTable extends LitElement {
       color: var(--danger-color);
       font-size: 0.75rem;
       margin-top: 0.25rem;
+    }
+
+    .multiline-text {
+      white-space: pre-wrap;
+      word-break: break-word;
     }
 
     .actions {
@@ -852,6 +877,18 @@ class DataTable extends LitElement {
             </select>
           </div>
         `;
+      case 'textarea':
+        return html`
+          <div class="field">
+            <textarea
+              .value=${value !== null ? value : ''}
+              @input=${e => this.handleInput(key, e)}
+              rows=${field.rows || 3}
+              ...=${commonProps}
+            ></textarea>
+            ${field.required && (value === null || value === '') ? html`<div class="error-message">${field.label}為必填欄位</div>` : ''}
+          </div>
+        `;
       default: // text, email, etc.
         return html`
           <div class="field">
@@ -875,7 +912,8 @@ class DataTable extends LitElement {
       'email': html`<i class="fas fa-envelope"></i>`,
       'boolean': html`<i class="fas fa-check-circle"></i>`,
       'date': html`<i class="fas fa-calendar-day"></i>`,
-      'select': html`<i class="fas fa-caret-down"></i>`
+      'select': html`<i class="fas fa-caret-down"></i>`,
+      'textarea': html`<i class="fas fa-align-left"></i>`
     };
     return icons[type] || '';
   }
@@ -1120,7 +1158,9 @@ class DataTable extends LitElement {
         html`${this.renderInputField(field, this.editingRow[field.key], this.loading)}` :
         field.type === 'boolean'
           ? (row[field.key] ? html`<i class="fas fa-check text-success"></i>` : html`<i class="fas fa-times text-danger"></i>`)
-          : (row[field.key] !== null ? row[field.key] : '')}
+          : field.type === 'textarea'
+            ? html`<div class="multiline-text">${row[field.key]}</div>`
+            : (row[field.key] !== null ? row[field.key] : '')}
                       </td>
                     `)}
                     ${showControls ? html`<td>

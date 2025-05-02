@@ -7,7 +7,8 @@
       "email": "zhangsan@example.com",
       "isActive": true,
       "birthdate": "1994-05-15",
-      "role": "admin"
+      "role": "admin",
+      "comment": "......"
     },
     {
       "id": "2",
@@ -16,7 +17,8 @@
       "email": "lisi@example.com",
       "isActive": false,
       "birthdate": "1999-12-10",
-      "role": "user"
+      "role": "user",
+      "comment": "......"
     },
     {
       "id": "3",
@@ -25,7 +27,8 @@
       "email": "wangwu@example.com",
       "isActive": true,
       "birthdate": "1984-08-22",
-      "role": "admin"
+      "role": "admin",
+      "comment": "......"
     }
   ],
   "users_schema": [
@@ -91,6 +94,12 @@
         }
       ],
       "id": "4b13"
+    },
+    {
+      "key": "comment",
+      "label": "備註",
+      "type": "textarea",
+      "id": "f3a2"
     }
   ]
 }
