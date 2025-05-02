@@ -74,7 +74,8 @@ class DataTable extends LitElement {
       --surface-color: #ffffff;
       --border-color: #e5e7eb;
       --hover-color: #f9fafb;
-      --header-color: #f8fafc;
+      --header-color: #f2f4ff;
+      --disabled-color: #f8fafc;
       --text-color: #1f2937;
       --text-light: #6b7280;
       --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
@@ -273,6 +274,10 @@ class DataTable extends LitElement {
       overflow: hidden;
     }
 
+    table tr:hover {
+      background: var(--hover-color);
+    }
+
     th {
       background: var(--header-color);
       position: relative;
@@ -430,7 +435,7 @@ class DataTable extends LitElement {
     }
 
     .pagination button:disabled {
-      background: var(--header-color);
+      background: var(--disabled-color);
       color: var(--text-light);
       cursor: not-allowed;
     }
