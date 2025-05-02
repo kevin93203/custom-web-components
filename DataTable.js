@@ -2,7 +2,7 @@ import { LitElement, html, css } from 'https://cdn.jsdelivr.net/gh/lit/dist@3/co
 
 class DataTable extends LitElement {
   static properties = {
-    title: { type: String },
+    tableTitle: { type: String },
     data: { type: Array },
     schema: { type: Array },
     filterText: { type: String },
@@ -28,7 +28,7 @@ class DataTable extends LitElement {
 
   constructor() {
     super();
-    this.title = this.getAttribute('title') || 'DataTable';
+    this.tableTitle = this.getAttribute('table-title') || '資料表';
     this.data = [];
     this.schema = [];
     this.filterText = '';
@@ -1133,7 +1133,7 @@ class DataTable extends LitElement {
 
     return html`
       <div>
-        <h2>${this.title}</h2>
+        <h2>${this.tableTitle}</h2>
         
         <div class="controls">
           <div class="controls-group">

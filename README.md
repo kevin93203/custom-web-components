@@ -40,7 +40,7 @@ A highly customizable and feature-rich data table web component built with Lit. 
 2. Use the component in your HTML:
 ```html
 <data-table 
-  title="Users"
+  table-title="Users"
   base-api-url="http://localhost:3000"
   list-endpoint="/users"
   create-endpoint="/users"
@@ -59,7 +59,7 @@ A highly customizable and feature-rich data table web component built with Lit. 
 
 | Attribute | Type | Description | Default |
 |-----------|------|-------------|---------|
-| title | String | Table title displayed at the top | "DataTable" |
+| table-title | String | Table title displayed at the top | "DataTable" |
 | base-api-url | String | Base URL for API endpoints | - |
 | list-endpoint | String | Endpoint for fetching data | - |
 | create-endpoint | String | Endpoint for creating records | - |
