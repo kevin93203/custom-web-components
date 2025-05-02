@@ -22,7 +22,8 @@ class DataTable extends LitElement {
     deleteEndpoint: { type: String },
     schemaEndpoint: { type: String },
     isPasswordProtected: { type: Boolean },
-    passwordVerified: { type: Boolean }
+    passwordVerified: { type: Boolean },
+    filterColumn: { type: String },
   };
 
   constructor() {
@@ -42,6 +43,7 @@ class DataTable extends LitElement {
     this.isPasswordProtected = this.hasAttribute('protected');
     this.passwordVerified = !this.isPasswordProtected;
     this.password = this.getAttribute('password') || '123456';
+    this.filterColumn = ''; // 新增搜尋欄位屬性
 
     // Initialize API configuration from attributes
     this.apiConfig = {
@@ -117,6 +119,29 @@ class DataTable extends LitElement {
     .search-container {
       position: relative;
       min-width: 240px;
+    }
+
+    .search-group {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      min-width: 400px;
+    }
+
+    .search-field-select {
+      min-width: 120px;
+      padding: 0.5rem;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      font-size: 0.875rem;
+      background: var(--surface-color);
+      color: var(--text-color);
+    }
+
+    .search-field-select:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.1);
     }
 
     .search-icon {
@@ -446,11 +471,57 @@ class DataTable extends LitElement {
   get filteredData() {
     const keyword = this.filterText.toLowerCase();
     return this.data
-      .filter(row =>
-        Object.values(row).some(val =>
-          val !== null && String(val).toLowerCase().includes(keyword)
-        )
-      )
+      .filter(row => {
+        if (!keyword) return true;
+        if (!this.filterColumn) {
+          // 如果沒有選擇特定欄位，搜尋所有欄位
+          return Object.values(row).some(val =>
+            val !== null && String(val).toLowerCase().includes(keyword)
+          );
+        } else {
+          // 找到欄位定義以確定類型
+          const field = this.schema.find(f => f.key === this.filterColumn);
+          if (!field) return false;
+
+          const value = row[this.filterColumn];
+          if (value === null) return false;
+
+          // 數值型別的特殊處理
+          if (field.type === 'number') {
+            const numericValue = Number(value);
+
+            // 檢查各種運算符的情況
+            if (keyword.startsWith('>=')) {
+              const searchValue = Number(keyword.slice(2));
+              return !isNaN(searchValue) && numericValue >= searchValue;
+            }
+            if (keyword.startsWith('<=')) {
+              const searchValue = Number(keyword.slice(2));
+              return !isNaN(searchValue) && numericValue <= searchValue;
+            }
+            if (keyword.startsWith('>')) {
+              const searchValue = Number(keyword.slice(1));
+              return !isNaN(searchValue) && numericValue > searchValue;
+            }
+            if (keyword.startsWith('<')) {
+              const searchValue = Number(keyword.slice(1));
+              return !isNaN(searchValue) && numericValue < searchValue;
+            }
+            if (keyword.includes('-')) {
+              // 範圍搜尋 (例如: 20-30)
+              const [min, max] = keyword.split('-').map(Number);
+              return !isNaN(min) && !isNaN(max) && numericValue >= min && numericValue <= max;
+            }
+
+            // 精確匹配
+            const searchValue = Number(keyword);
+            return !isNaN(searchValue) && numericValue === searchValue;
+          } else {
+            // 其他類型使用普通文字搜尋
+            return String(value).toLowerCase().includes(keyword);
+          }
+        }
+      })
       .sort((a, b) => {
         if (!this.sortColumn) return 0;
         const valA = a[this.sortColumn];
@@ -484,9 +555,9 @@ class DataTable extends LitElement {
     // 計算實際的數據索引
     const actualIndex = (this.currentPage - 1) * this.pageSize + index;
     const actualData = this.filteredData[actualIndex];
-    
+
     if (!actualData) return; // 安全檢查
-    
+
     this.editingIndex = index;
     this.editingRow = { ...actualData };
     this.isNewRow = false;
@@ -551,7 +622,7 @@ class DataTable extends LitElement {
 
         if (!res.ok) throw new Error('Failed to update data');
         const updatedRow = await res.json();
-        
+
         // 找到原始數據中的索引位置
         const originalIndex = this.data.findIndex(item => item.id === id);
         if (originalIndex !== -1) {
@@ -589,17 +660,17 @@ class DataTable extends LitElement {
     // 計算實際的數據索引
     const actualIndex = (this.currentPage - 1) * this.pageSize + index;
     const actualData = this.filteredData[actualIndex];
-    
+
     if (!actualData) return; // 安全檢查
-    
+
     const id = actualData.id;
     try {
       const res = await fetch(`${this.apiConfig.baseApiUrl}${this.apiConfig.deleteEndpoint}/${id}`, { method: 'DELETE' });
       if (!res.ok) throw new Error('Failed to delete data');
-      
+
       // 從原始數據中刪除
       this.data = this.data.filter(row => row.id !== id);
-      
+
       // 如果當前頁變成空的，且不是第一頁，則自動跳轉到前一頁
       const totalPages = Math.ceil(this.filteredData.length / this.pageSize);
       if (this.currentPage > 1 && this.currentPage > totalPages) {
@@ -748,11 +819,11 @@ class DataTable extends LitElement {
   renderPaginationControls() {
     const totalPages = Math.ceil(this.filteredData.length / this.pageSize);
     const currentPage = this.currentPage;
-    
+
     // 計算要顯示的頁碼範圍
     let startPage = Math.max(1, currentPage - 2);
     let endPage = Math.min(totalPages, startPage + 4);
-    
+
     // 調整起始頁碼，確保總是顯示5個頁碼（如果有足夠的頁數）
     if (endPage - startPage < 4) {
       startPage = Math.max(1, endPage - 4);
@@ -804,6 +875,50 @@ class DataTable extends LitElement {
         
         <div class="pagination-info">
           第 ${currentPage} 頁，共 ${totalPages} 頁
+        </div>
+      </div>
+    `;
+  }
+
+  getSearchPlaceholder() {
+    if (!this.filterColumn) return '搜尋...';
+
+    const field = this.schema.find(f => f.key === this.filterColumn);
+    if (!field) return '搜尋...';
+
+    if (field.type === 'number') {
+      return `輸入數字：可用 >, <, >=, <= 或 範圍 (如：20-30)`;
+    }
+
+    return `搜尋 ${field.label || ''}...`;
+  }
+
+  renderSearchControls() {
+    const visibleSchema = this.schema.filter(field => !field.hidden);
+
+    return html`
+      <div class="search-group">
+        <select 
+          class="search-field-select"
+          @change=${e => this.filterColumn = e.target.value}
+          ?disabled=${this.loading}
+        >
+          <option value="">搜尋全部欄位</option>
+          ${visibleSchema.map(field => html`
+            <option value=${field.key} ?selected=${this.filterColumn === field.key}>
+              ${field.label}
+            </option>
+          `)}
+        </select>
+        <div class="search-container">
+          <i class="fas fa-search search-icon"></i>
+          <input 
+            type="text" 
+            .value=${this.filterText} 
+            @input=${e => !this.loading && (this.filterText = e.target.value)}
+            placeholder=${this.getSearchPlaceholder()}
+            ?disabled=${this.loading}
+          />
         </div>
       </div>
     `;
@@ -875,30 +990,19 @@ class DataTable extends LitElement {
         <div class="controls">
           <div class="controls-group">
             ${this.renderPasswordToggle()}
-            <div class="search-container">
-              <i class="fas fa-search search-icon"></i>
-              <input 
-                type="text" 
-                .value=${this.filterText} 
-                @input=${e => !this.loading && (this.filterText = e.target.value)}
-                placeholder="搜尋..."
-                ?disabled=${this.loading}
-              />
-            </div>
+            ${this.renderSearchControls()}
           </div>
 
           <div class="controls-divider"></div>
 
           <div class="controls-group">
-            ${showControls ? html`
-              <button class="btn-secondary" 
-                @click=${() => this.withPasswordProtection(() => this.handleNew())}
-                ?disabled=${this.loading}
-              >
-                <i class="fas fa-plus"></i>
-                <span>新增</span>
-              </button>
-            ` : ''}
+            ${showControls ? html` <button class="btn-secondary" 
+              @click=${() => this.withPasswordProtection(() => this.handleNew())}
+              ?disabled=${this.loading}
+            >
+              <i class="fas fa-plus"></i>
+              <span>新增</span>
+            </button>` : ''}
             <button class="btn-secondary" 
               @click=${() => this.exportToCSV()}
               ?disabled=${this.loading}
@@ -949,16 +1053,16 @@ class DataTable extends LitElement {
                     ${visibleSchema.map(field => html`
                       <td>
                         ${this.editingIndex === index ?
-                          html`${this.renderInputField(field, this.editingRow[field.key], this.loading)}` :
-                          field.type === 'boolean'
-                            ? (row[field.key] ? html`<i class="fas fa-check text-success"></i>` : html`<i class="fas fa-times text-danger"></i>`)
-                            : (row[field.key] !== null ? row[field.key] : '')}
+        html`${this.renderInputField(field, this.editingRow[field.key], this.loading)}` :
+        field.type === 'boolean'
+          ? (row[field.key] ? html`<i class="fas fa-check text-success"></i>` : html`<i class="fas fa-times text-danger"></i>`)
+          : (row[field.key] !== null ? row[field.key] : '')}
                       </td>
                     `)}
                     ${showControls ? html`<td>
                       <div class="actions">
                         ${this.editingIndex === index ?
-                          html`
+          html`
                             <button class="btn-primary" 
                               @click=${() => this.withPasswordProtection(() => this.handleSave(index))}
                               ?disabled=${this.loading}
@@ -968,11 +1072,11 @@ class DataTable extends LitElement {
                             <button class="btn-icon" 
                               @click=${this.handleCancel}
                               ?disabled=${this.loading}
-                            >
+                            ></button>
                               <i class="fas fa-times"></i>
                             </button>
                           ` :
-                          html`
+          html`
                             <button class="btn-icon btn-edit" 
                               @click=${() => this.withPasswordProtection(() => this.handleEdit(index))}
                               ?disabled=${this.loading}
@@ -1040,7 +1144,7 @@ class DataTable extends LitElement {
     const link = document.createElement('link');
     link.rel = 'stylesheet';
     link.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css';
-    
+
     const head = document.createElement('head');
     const style = document.createElement('style');
     style.textContent = this.constructor.styles.cssText;
