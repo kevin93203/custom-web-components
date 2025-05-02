@@ -1136,7 +1136,7 @@ class DataTable extends LitElement {
                             <button class="btn-icon" 
                               @click=${this.handleCancel}
                               ?disabled=${this.loading}
-                            ></button>
+                            >
                               <i class="fas fa-times"></i>
                             </button>
                           ` :
