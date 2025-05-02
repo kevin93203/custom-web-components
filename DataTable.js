@@ -273,35 +273,40 @@ class DataTable extends LitElement {
       overflow: hidden;
     }
 
+    th {
+      background: var(--header-color);
+      position: relative;
+      padding-right: 1.5rem;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    th.sorted-asc::after,
+    th.sorted-desc::after {
+      content: '';
+      position: absolute;
+      right: 0.5rem;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 0;
+      height: 0;
+      border-left: 4px solid transparent;
+      border-right: 4px solid transparent;
+    }
+
+    th.sorted-asc::after {
+      border-bottom: 4px solid var(--text-color);
+    }
+
+    th.sorted-desc::after {
+      border-top: 4px solid var(--text-color);
+    }
+
     th, td {
       padding: 0.75rem 1rem;
       text-align: left;
       border-bottom: 1px solid var(--border-color);
       font-size: 0.875rem;
-    }
-
-    th {
-      background-color: var(--header-color);
-      font-weight: 600;
-      color: var(--text-color);
-      cursor: pointer;
-      transition: background-color 0.2s;
-      user-select: none;
-      white-space: nowrap;
-    }
-
-    th:hover:not([disabled]) {
-      background-color: var(--hover-color);
-    }
-
-    td {
-      vertical-align: middle;
-      padding: 0.75rem 1rem;
-      text-align: left;
-      border-bottom: 1px solid var(--border-color);
-      font-size: 0.875rem;
-      min-height: 3rem;
-      height: 3.5rem; /* 確保所有單元格高度一致 */
     }
 
     .field {
