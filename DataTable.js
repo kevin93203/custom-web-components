@@ -888,6 +888,8 @@ class DataTable extends LitElement {
 
     if (field.type === 'number') {
       return `輸入數字：可用 >, <, >=, <= 或 範圍 (如：20-30)`;
+    } else if (field.type === 'boolean') {
+      return `輸入 true 或 false`;
     }
 
     return `搜尋 ${field.label || ''}...`;
