@@ -374,6 +374,8 @@ class DataTable extends LitElement {
       color: var(--danger-color);
       font-size: 0.75rem;
       margin-top: 0.25rem;
+      min-height: 1rem;
+      white-space: nowrap;
     }
 
     .multiline-text {
@@ -847,7 +849,7 @@ class DataTable extends LitElement {
               max=${field.max !== undefined ? field.max : ''}
               ...=${commonProps}
             />
-            ${field.required && (value === null || value === '') ? html`<div class="error-message">${field.label}為必填欄位</div>` : ''}
+            ${html`<div class="error-message">${field.required && (value === null || value === '') ? `${field.label}為必填欄位`:``}</div>`}
           </div>
         `;
       case 'boolean':
@@ -859,6 +861,7 @@ class DataTable extends LitElement {
               @change=${e => this.handleInput(key, e)}
               ?disabled=${isLoading}
             />
+            ${html`<div class="error-message">${field.required && (value === null || value === '') ? `${field.label}為必填欄位`:``}</div>`}
           </div>
         `;
       case 'date':
@@ -870,7 +873,7 @@ class DataTable extends LitElement {
               @input=${e => this.handleInput(key, e)}
               ...=${commonProps}
             />
-            ${field.required && (value === null || value === '') ? html`<div class="error-message">${field.label}為必填欄位</div>` : ''}
+            ${html`<div class="error-message">${field.required && (value === null || value === '') ? `${field.label}為必填欄位`:``}</div>`}
           </div>
         `;
       case 'select':
@@ -887,6 +890,7 @@ class DataTable extends LitElement {
                 </option>
               `)}
             </select>
+            ${html`<div class="error-message">${field.required && (value === null || value === '') ? `${field.label}為必填欄位`:``}</div>`}
           </div>
         `;
       case 'textarea':
@@ -898,7 +902,7 @@ class DataTable extends LitElement {
               rows=${field.rows || 3}
               ...=${commonProps}
             ></textarea>
-            ${field.required && (value === null || value === '') ? html`<div class="error-message">${field.label}為必填欄位</div>` : ''}
+            ${html`<div class="error-message">${field.required && (value === null || value === '') ? `${field.label}為必填欄位`:``}</div>`}
           </div>
         `;
       default: // text, email, etc.
@@ -911,7 +915,7 @@ class DataTable extends LitElement {
               maxlength=${field.maxLength || ''}
               ...=${commonProps}
             />
-            ${field.required && (value === null || value === '') ? html`<div class="error-message">${field.label}為必填欄位</div>` : ''}
+            ${html`<div class="error-message">${field.required && (value === null || value === '') ? `${field.label}為必填欄位`:``}</div>`}
           </div>
         `;
     }
