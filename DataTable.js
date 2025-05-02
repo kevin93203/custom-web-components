@@ -57,24 +57,27 @@ class DataTable extends LitElement {
   static styles = css`
     :host {
       display: block;
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-      color: #334155;
+      font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      color: var(--text-color);
       padding: 1.5rem;
       max-width: 1200px;
       margin: 0 auto;
       overflow-x: auto;
-      /* 新增橫向滾動條支援 */
-      --primary-color: #3b82f6;
-      --primary-hover: #2563eb;
-      --danger-color: #ef4444;
-      --danger-hover: #dc2626;
+      
+      /* 更新配色方案 */
+      --primary-color: #4f46e5;
+      --primary-hover: #4338ca;
+      --danger-color: #dc2626;
+      --danger-hover: #b91c1c;
       --surface-color: #ffffff;
-      --border-color: #e2e8f0;
-      --hover-color: #f8fafc;
-      --header-color: #f1f5f9;
-      --text-color: #334155;
-      --text-light: #64748b;
-      --shadow: 0 1px 3px 0 rgba(0,0,0,0.1), 0 1px 2px 0 rgba(0,0,0,0.06);
+      --border-color: #e5e7eb;
+      --hover-color: #f9fafb;
+      --header-color: #f8fafc;
+      --text-color: #1f2937;
+      --text-light: #6b7280;
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+      --radius-sm: 0.375rem;
       --radius: 0.5rem;
     }
 
@@ -82,93 +85,133 @@ class DataTable extends LitElement {
       font-size: 1.5rem;
       font-weight: 600;
       margin-bottom: 1.5rem;
-      color: #1e293b;
+      color: var(--text-color);
     }
 
     .controls {
       display: flex;
-      gap: 0.75rem;
-      margin-bottom: 1.25rem;
+      justify-content: space-between;
       align-items: center;
+      margin-bottom: 1.25rem;
+      background: var(--surface-color);
+      padding: 0.75rem;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--border-color);
+      gap: 1rem;
+    }
+
+    .controls-group {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .controls-divider {
+      width: 1px;
+      height: 24px;
+      background: var(--border-color);
+      margin: 0 0.5rem;
+    }
+
+    .search-container {
+      position: relative;
+      min-width: 240px;
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 0.75rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-light);
+      pointer-events: none;
     }
 
     input[type="text"] {
-      padding: 0.625rem 0.875rem;
+      width: 100%;
+      padding: 0.5rem 0.75rem 0.5rem 2.25rem;
       border: 1px solid var(--border-color);
-      border-radius: var(--radius);
-      flex-grow: 1;
+      border-radius: var(--radius-sm);
       font-size: 0.875rem;
       transition: all 0.2s;
+      background: var(--surface-color);
     }
 
     input[type="text"]:focus {
       outline: none;
       border-color: var(--primary-color);
-      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+      box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.1);
     }
 
     button {
-      padding: 0.625rem 1rem;
+      padding: 0.5rem 0.75rem;
       border: none;
-      border-radius: var(--radius);
+      border-radius: var(--radius-sm);
       font-size: 0.875rem;
       cursor: pointer;
-      transition: all 0.2s;
+      transition: all 0.15s;
       display: inline-flex;
       align-items: center;
       justify-content: center;
       gap: 0.375rem;
       font-weight: 500;
+      height: 36px;
+      min-width: 36px;
     }
 
-    button:hover {
+    button:hover:not(:disabled) {
       transform: translateY(-1px);
     }
 
-    button:active {
+    button:active:not(:disabled) {
       transform: translateY(0);
     }
 
-    button[disabled], 
-    input[disabled], 
-    select[disabled] {
+    button[disabled] {
       cursor: not-allowed;
       opacity: 0.6;
     }
 
-    th[disabled] {
-      cursor: not-allowed !important;
-    }
-
-    .btn-primary {
+    button.btn-primary {
       background-color: var(--primary-color);
       color: white;
     }
 
-    .btn-primary:hover {
+    button.btn-primary:hover:not(:disabled) {
       background-color: var(--primary-hover);
     }
 
-    .btn-danger {
-      background-color: var(--danger-color);
-      color: white;
+    button.btn-secondary {
+      background-color: var(--surface-color);
+      color: var(--text-color);
+      border: 1px solid var(--border-color);
+      padding: 0.5rem 0.75rem;
+      height: 36px;
+      gap: 0.375rem;
     }
 
-    .btn-danger:hover {
-      background-color: var(--danger-hover);
+    button.btn-secondary:hover:not(:disabled) {
+      background-color: var(--hover-color);
+      border-color: var(--text-light);
+    }
+
+    button.btn-secondary span {
+      font-size: 0.875rem;
     }
 
     .btn-icon {
       padding: 0.5rem;
-      border-radius: var(--radius);
       background-color: transparent;
       color: var(--text-light);
-      transition: all 0.2s;
+      border-radius: var(--radius-sm);
+      min-width: 36px;
     }
 
-    .btn-icon:hover {
-      background-color: rgba(0, 0, 0, 0.05);
+    .btn-icon:hover:not(:disabled) {
+      background-color: var(--hover-color);
       color: var(--text-color);
+      transform: none;
     }
 
     .btn-edit {
@@ -179,26 +222,33 @@ class DataTable extends LitElement {
       color: var(--danger-color);
     }
 
-    .table-wrapper {
-      width: 100%;
-      overflow-x: auto;
+    .loading-spinner {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.75rem 1.5rem;
+      background: white;
+      border-radius: var(--radius-sm);
+      box-shadow: var(--shadow);
+      font-size: 0.875rem;
     }
 
     table {
       width: 100%;
       min-width: 800px;
-      /* 設定最小寬度，讓欄位不會太擠 */
       border-collapse: separate;
       border-spacing: 0;
-      box-shadow: var(--shadow);
+      box-shadow: var(--shadow-sm);
       border-radius: var(--radius);
+      border: 1px solid var(--border-color);
       overflow: hidden;
     }
 
     th, td {
-      padding: 0.875rem 1rem;
+      padding: 0.75rem 1rem;
       text-align: left;
       border-bottom: 1px solid var(--border-color);
+      font-size: 0.875rem;
     }
 
     th {
@@ -207,168 +257,103 @@ class DataTable extends LitElement {
       color: var(--text-color);
       cursor: pointer;
       transition: background-color 0.2s;
-      position: relative;
       user-select: none;
     }
 
-    th:hover {
-      background-color: #e5e9f0;
-    }
-
-    th.sorted-asc::after {
-      content: "\\f0d8";
-      font-family: "Font Awesome 5 Free";
-      font-weight: 900;
-      margin-left: 0.5rem;
-      opacity: 0.7;
-      font-size: 0.875rem;
-    }
-
-    th.sorted-desc::after {
-      content: "\\f0d7";
-      font-family: "Font Awesome 5 Free";
-      font-weight: 900;
-      margin-left: 0.5rem;
-      opacity: 0.7;
-      font-size: 0.875rem;
-    }
-
-    tr:hover {
+    th:hover:not([disabled]) {
       background-color: var(--hover-color);
     }
 
-    tr:last-child td {
-      border-bottom: none;
-    }
-
-    .type-icon {
-      margin-right: 0.5rem;
-      opacity: 0.7;
+    td {
+      vertical-align: middle;
+      padding: 0.75rem 1rem;
+      text-align: left;
+      border-bottom: 1px solid var(--border-color);
       font-size: 0.875rem;
+      min-height: 3rem;
+      height: 3.5rem; /* 確保所有單元格高度一致 */
     }
 
-    .loading {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 3rem 0;
-      color: var(--text-light);
-      gap: 0.75rem;
+    .field {
+      width: 100%;
+      position: relative;
+      margin: -0.5rem 0; /* 調整輸入框的外邊距，使其在編輯模式下也能保持垂直置中 */
     }
 
-    .loading-fallback {
-      display: inline-block;
-      width: 20px;
-      height: 20px;
-      border: 2px solid var(--text-light);
-      border-radius: 50%;
-      border-top-color: transparent;
-      animation: spin 1s linear infinite;
+    .field input,
+    .field select {
+      width: 100%;
+      padding: 0.5rem 0.75rem;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      font-size: 0.875rem;
+      transition: all 0.2s;
+      background: var(--surface-color);
+      color: var(--text-color);
     }
 
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
+    .field input[type="checkbox"] {
+      width: auto;
+      margin: 0;
+      cursor: pointer;
     }
 
-    .empty-state {
-      text-align: center;
-      padding: 3rem 0;
-      color: var(--text-light);
+    .field input:focus,
+    .field select:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.1);
+    }
+
+    .field input.invalid,
+    .field select.invalid {
+      border-color: var(--danger-color);
+    }
+
+    .field .error-message {
+      color: var(--danger-color);
+      font-size: 0.75rem;
+      margin-top: 0.25rem;
     }
 
     .actions {
       display: flex;
       gap: 0.5rem;
+      align-items: center; /* 確保按鈕垂直置中 */
     }
 
-    input, select {
-      width: 100%;
-      box-sizing: border-box;
+    .actions button {
       padding: 0.5rem;
-      border: 1px solid var(--border-color);
-      border-radius: var(--radius);
-      font-size: 0.875rem;
-      transition: all 0.2s;
+      min-width: auto;
     }
 
-    input:focus, select:focus {
-      outline: none;
-      border-color: var(--primary-color);
-      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+    .actions .btn-primary {
+      padding: 0.5rem 1rem;
     }
 
-    input[type="checkbox"] {
-      width: auto;
-    }
-
-    .invalid {
-      border-color: var(--danger-color) !important;
-    }
-    .error-message {
-      color: var(--danger-color);
-      font-size: 0.875rem;
-      margin-top: 0.25rem;
-    }
-    .required {
-      color: var(--danger-color);
-      position: relative;
-      margin-left: 0.25rem;
-      top: -0.2em;
-      font-size: 0.8em;
-    }
     .pagination {
       margin-top: 1rem;
       display: flex;
       justify-content: center;
       align-items: center;
-      gap: 0.5rem;
+      gap: 1rem;
+      padding: 0.75rem;
     }
+
     .pagination button {
-      padding: 0.5rem 1rem;
-      border: none;
-      border-radius: var(--radius);
-      font-size: 0.875rem;
-      cursor: pointer;
-      transition: all 0.2s;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.375rem;
+      background: transparent;
+      color: var(--text-color);
       font-weight: 500;
     }
-    .pagination button:hover {
-      transform: translateY(-1px);
-    }
-    .pagination button:active {
-      transform: translateY(0);
+
+    .pagination button:hover:not(:disabled) {
+      background: var(--hover-color);
+      transform: none;
     }
 
-    .loading-overlay {
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(255, 255, 255, 0.8);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      z-index: 1000;
-    }
-
-    .loading-spinner {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      padding: 1rem 2rem;
-      background: white;
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-    }
-
-    .table-container {
-      position: relative;
+    .pagination button:disabled {
+      color: var(--text-light);
+      background: transparent;
     }
   `;
 
@@ -730,37 +715,49 @@ class DataTable extends LitElement {
         <h2>${this.title}</h2>
         
         <div class="controls">
-          ${this.renderPasswordToggle()}
-          <div style="position: relative; flex-grow: 1;">
-            <input 
-              style="width: 100%;"
-              type="text" 
-              .value=${this.filterText} 
-              @input=${e => !this.loading && (this.filterText = e.target.value)}
-              placeholder="Search..."
-              ?disabled=${this.loading}
-            />
+          <div class="controls-group">
+            ${this.renderPasswordToggle()}
+            <div class="search-container">
+              <i class="fas fa-search search-icon"></i>
+              <input 
+                type="text" 
+                .value=${this.filterText} 
+                @input=${e => !this.loading && (this.filterText = e.target.value)}
+                placeholder="搜尋..."
+                ?disabled=${this.loading}
+              />
+            </div>
           </div>
-          ${showControls ? html`
-            <button class="btn-primary" 
-              @click=${() => this.withPasswordProtection(() => this.handleNew())}
+
+          <div class="controls-divider"></div>
+
+          <div class="controls-group">
+            ${showControls ? html`
+              <button class="btn-secondary" 
+                @click=${() => this.withPasswordProtection(() => this.handleNew())}
+                ?disabled=${this.loading}
+              >
+                <i class="fas fa-plus"></i>
+                <span>新增</span>
+              </button>
+            ` : ''}
+            <button class="btn-secondary" 
+              @click=${() => this.exportToCSV()}
               ?disabled=${this.loading}
+              title="匯出 CSV"
             >
-                <i class="fas fa-plus"></i> Add New
+              <i class="fas fa-file-export"></i>
+              <span>匯出</span>
             </button>
-          ` : ''}
-          <button class="btn-primary" 
-            @click=${() => this.exportToCSV()}
-            ?disabled=${this.loading}
-          >
-              <i class="fas fa-file-csv"></i> Export CSV
-          </button>
-          <button class="btn-primary" 
-            @click=${() => this.fetchSchemaAndData()}
-            ?disabled=${this.loading}
-          >
-            <i class="fas fa-sync-alt"></i> Reload
-          </button>
+            <button class="btn-secondary" 
+              @click=${() => this.fetchSchemaAndData()}
+              ?disabled=${this.loading}
+              title="重新載入資料"
+            >
+              <i class="fas fa-sync-alt"></i>
+              <span>重整</span>
+            </button>
+          </div>
         </div>
         
         <div class="table-wrapper">
