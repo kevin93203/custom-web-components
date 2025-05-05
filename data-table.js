@@ -205,9 +205,10 @@ export class DataTable extends LitElement {
       transform: translateY(0);
     }
 
-    button[disabled], select[disabled], input[disabled] {
+    button:disabled, select:disabled, input:disabled, textarea:disabled {
       cursor: not-allowed;
       opacity: 0.6;
+      background-color: var(--disabled-color);
     }
 
     button.btn-primary {
@@ -676,6 +677,8 @@ export class DataTable extends LitElement {
 
   handleInput(key, e) {
     const field = this.schema.find(f => f.key === key);
+    if (!field || field.editable === false) return; // 如果欄位不可編輯，則不處理其輸入
+
     let value = e.target.value;
 
     // Convert input value to correct type
@@ -694,11 +697,34 @@ export class DataTable extends LitElement {
       this.requestUpdate();
       return;
     }
-    const row = this.editingRow;
+    
+    // 找到當前編輯的原始資料以保留不可編輯欄位的值
+    let originalRow = {};
+    
+    if (!this.isNewRow) {
+      // 如果是編輯現有行，獲取原始資料
+      const actualIndex = (this.currentPage - 1) * this.pageSize + index;
+      const actualData = this.filteredData[actualIndex];
+      if (actualData) {
+        originalRow = { ...actualData };
+      }
+    }
+    
+    // 合併編輯的值，同時保留不可編輯欄位的原始值
+    let row = { ...this.editingRow };
+    
+    // 對於不可編輯的欄位，使用原始值
+    if (!this.isNewRow) {
+      this.schema.forEach(field => {
+        if (field.editable === false && originalRow[field.key] !== undefined) {
+          row[field.key] = originalRow[field.key];
+        }
+      });
+    }
 
     // Validate required fields
     const missingFields = this.schema
-      .filter(field => field.required && (row[field.key] === null || row[field.key] === ''))
+      .filter(field => field.required && field.editable !== false && (row[field.key] === null || row[field.key] === ''))
       .map(field => field.label || field.key);
 
     if (missingFields.length > 0) {
@@ -839,10 +865,14 @@ export class DataTable extends LitElement {
 
   renderInputField(field, value, isLoading) {
     const key = field.key;
+    const isEditable = field.editable !== false; // 如果editable屬性未定義或為true，則可編輯
     const commonProps = {
-      disabled: isLoading,
+      disabled: isLoading || !isEditable, // 根據editable狀態設置禁用屬性
       required: field.required,
-      class: field.required && (value === null || value === '') ? 'invalid' : ''
+      class: field.required && (value === null || value === '') ? 'invalid' : '',
+      style: !isEditable ? 'background-color: var(--disabled-color); cursor: not-allowed;' : '',
+      name: key, // 添加name屬性方便驗證時識別
+      'data-field-key': key // 加一個額外的屬性以防萬一
     };
 
     switch (field.type) {
@@ -871,7 +901,8 @@ export class DataTable extends LitElement {
               type="checkbox"
               ?checked=${value}
               @change=${e => this.handleInput(key, e)}
-              ?disabled=${isLoading}
+              ?disabled=${isLoading || !isEditable}
+              style=${!isEditable ? 'cursor: not-allowed; opacity: 0.6;' : ''}
             />
             ${html`<div class="error-message">${field.required && (value === null || value === '') ? `${field.label}為必填欄位`:``}</div>`}
           </div>
@@ -893,7 +924,8 @@ export class DataTable extends LitElement {
           <div class="field">
             <select 
               @change=${e => this.handleInput(key, e)}
-              ?disabled=${isLoading}
+              ?disabled=${isLoading || !isEditable}
+              style=${!isEditable ? 'background-color: var(--disabled-color); cursor: not-allowed;' : ''}
             >
               <option value="" ?selected=${value === null || value === ''}>請選擇</option>
               ${field.options.map(option => html`
@@ -1242,7 +1274,14 @@ export class DataTable extends LitElement {
                     ${visibleSchema.map(field => html`
                       <td title="${row[field.key]}">
                         ${this.editingIndex === index ?
-                          html`${this.renderInputField(field, this.editingRow[field.key], this.loading)}` :
+                          // 如果欄位設置為不可編輯，則即使在編輯模式下也顯示為靜態文本
+                          (field.editable === false ?
+                            (field.type === 'boolean'
+                              ? (row[field.key] ? html`<i class="fas fa-check text-success"></i>` : html`<i class="fas fa-times text-danger"></i>`)
+                              : field.type === 'select'
+                                ? html`${field.options.find(opt => opt.value === row[field.key])?.label || row[field.key]}`
+                                : (row[field.key] !== null ? row[field.key] : '')) :
+                            html`${this.renderInputField(field, this.editingRow[field.key], this.loading)}`) :
                           field.type === 'boolean'
                             ? (row[field.key] ? html`<i class="fas fa-check text-success"></i>` : html`<i class="fas fa-times text-danger"></i>`)
                             : field.type === 'text'
@@ -1264,9 +1303,19 @@ export class DataTable extends LitElement {
   }
 
   validateForm() {
-    const fields = this.shadowRoot.querySelectorAll('input, select');
+    const fields = this.shadowRoot.querySelectorAll('input, select, textarea');
     let valid = true;
+    
     fields.forEach(field => {
+      // 僅驗證可編輯且必填的欄位
+      const fieldName = field.name || field.getAttribute('data-field-key');
+      const schema = fieldName ? this.schema.find(f => f.key === fieldName) : null;
+      
+      if (schema && schema.editable === false) {
+        // 不可編輯欄位不進行驗證
+        return;
+      }
+      
       if (field.required && !field.value) {
         field.classList.add('invalid');
         valid = false;
@@ -1274,6 +1323,7 @@ export class DataTable extends LitElement {
         field.classList.remove('invalid');
       }
     });
+    
     return valid;
   }
 

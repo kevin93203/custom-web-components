@@ -19,6 +19,7 @@ A feature-rich data table component with the following features:
 - 🎨 Customizable styling with CSS variables
 - 🌐 Dynamic schema support
 - 📝 Support for various input types (text, number, date, boolean, select, textarea)
+- 🔒 Control field editability with schema attributes
 
 ### Tabs
 
@@ -105,6 +106,7 @@ The schema should be an array of objects with the following structure:
   "required": true,
   "description": "Field description",
   "hidden": false,
+  "editable": true,
   "defaultValue": "",
   "options": [
     {
@@ -124,6 +126,22 @@ The schema should be an array of objects with the following structure:
 - date
 - select
 - text
+
+### Field Properties
+
+| Property | Type | Description | Default |
+|----------|------|-------------|---------|
+| key | String | Unique identifier for the field | Required |
+| label | String | Display label for the field | Same as key |
+| type | String | Field data type (see supported types) | "string" |
+| required | Boolean | Whether field is required | false |
+| description | String | Help text shown on hover | null |
+| hidden | Boolean | Hide field from table display | false |
+| editable | Boolean | Whether field can be edited | true |
+| defaultValue | Any | Default value for new records | null |
+| options | Array | Options for select fields | [] |
+| min | Number | Minimum value (for number fields) | null |
+| max | Number | Maximum value (for number fields) | null |
 
 ## Tabs Configuration
 
@@ -171,6 +189,24 @@ The DataTable component supports complex filtering operations for numeric fields
 ### Password Protection
 
 Enable the `protected` attribute to require password verification before allowing CRUD operations.
+
+### Field Editability Control
+
+Set the `editable` property to `false` in your schema to make specific fields non-editable:
+
+```json
+{
+  "key": "id",
+  "label": "ID",
+  "type": "string",
+  "editable": false
+}
+```
+
+This will:
+- Prevent the field from being modified, even in edit mode
+- Display the field as read-only with a disabled appearance
+- Maintain original values during record updates
 
 ## Styling
 

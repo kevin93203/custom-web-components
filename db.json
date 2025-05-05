@@ -37,7 +37,8 @@
       "label": "編號",
       "type": "string",
       "hidden": true,
-      "id": "0deb"
+      "id": "0deb",
+      "editable": false
     },
     {
       "key": "name",
