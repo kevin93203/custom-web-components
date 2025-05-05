@@ -319,6 +319,7 @@ export class DataTable extends LitElement {
       border-bottom: 1px solid var(--border-color);
       border-left: 1px solid var(--border-color);
       font-size: 0.875rem;
+      white-space: nowrap;
     }
 
     .column-header {
@@ -382,11 +383,6 @@ export class DataTable extends LitElement {
       margin-top: 0.25rem;
       min-height: 1rem;
       white-space: nowrap;
-    }
-
-    .multiline-text {
-      white-space: pre-wrap;
-      word-break: break-word;
     }
 
     .actions {
@@ -1107,6 +1103,11 @@ export class DataTable extends LitElement {
     }
   }
 
+  // 截斷字串
+  truncateString(str, maxLength) {
+    return str.length > maxLength ? `${str.slice(0, maxLength)}...` : str;
+  }
+
   render() {
     if (!this.schema.length) {
       return html`
@@ -1197,13 +1198,13 @@ export class DataTable extends LitElement {
                 ${paginatedData.map((row, index) => html`
                   <tr>
                     ${visibleSchema.map(field => html`
-                      <td>
+                      <td title="${row[field.key]}">
                         ${this.editingIndex === index ?
                           html`${this.renderInputField(field, this.editingRow[field.key], this.loading)}` :
                           field.type === 'boolean'
                             ? (row[field.key] ? html`<i class="fas fa-check text-success"></i>` : html`<i class="fas fa-times text-danger"></i>`)
                             : field.type === 'text'
-                              ? html`<div class="multiline-text">${row[field.key]}</div>`
+                              ? html`${this.truncateString(row[field.key], 30)}`
                               : field.type === 'select'
                                 ? html`${field.options.find(opt => opt.value === row[field.key])?.label || row[field.key]}`
                                 : (row[field.key] !== null ? row[field.key] : '')}
