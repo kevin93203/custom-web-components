@@ -1186,6 +1186,7 @@ export class DataTable extends LitElement {
             <table>
               <thead>
                 <tr>
+                  ${showControls ? html`<th><i class="fas fa-cog"></i>操作</th>` : ''}
                   ${visibleSchema.map(field => html`
                     <th 
                       @click=${() => !this.loadingOrEditing && this.handleSort(field.key)}
@@ -1195,12 +1196,48 @@ export class DataTable extends LitElement {
                       ${this.renderColumnHeader(field)}
                     </th>
                   `)}
-                  ${showControls ? html`<th><i class="fas fa-cog"></i>操作</th>` : ''}
                 </tr>
               </thead>
               <tbody>
                 ${paginatedData.map((row, index) => html`
                   <tr>
+                     ${showControls ? html`<td>
+                      <div class="field">
+                        <div class="actions">
+                          ${this.editingIndex === index ?
+                            html`
+                              <button class="btn-icon" 
+                                @click=${this.handleCancel}
+                                ?disabled=${this.loading}
+                              >
+                                <i class="fas fa-times"></i>
+                              </button>
+                              <button class="btn-primary" 
+                                @click=${() => this.withPasswordProtection(() => this.handleSave(index))}
+                                ?disabled=${this.loading}
+                              >
+                                <i class="fas fa-save"></i> 儲存
+                              </button>
+                            ` :
+                            html`
+                              <button class="btn-icon btn-delete" 
+                                @click=${() => this.withPasswordProtection(() => this.handleDelete(index))}
+                                ?disabled=${this.loading}
+                              >
+                                <i class="fas fa-trash-alt"></i>
+                              </button>
+                              <button class="btn-icon btn-edit" 
+                                @click=${() => this.withPasswordProtection(() => this.handleEdit(index))}
+                                ?disabled=${this.loading}
+                              >
+                                <i class="fas fa-edit"></i>
+                              </button>
+                            `}
+                        </div>
+                        ${this.editingIndex === index ?
+                          html`<div class="error-message"></div>` : ''}
+                      </div>
+                    </td>` : ''}
                     ${visibleSchema.map(field => html`
                       <td title="${row[field.key]}">
                         ${this.editingIndex === index ?
@@ -1214,43 +1251,6 @@ export class DataTable extends LitElement {
                                 : (row[field.key] !== null ? row[field.key] : '')}
                       </td>
                     `)}
-                    ${showControls ? html`<td>
-                      <div class="field">
-                        <div class="actions">
-                          ${this.editingIndex === index ?
-                            html`
-                              <button class="btn-primary" 
-                                @click=${() => this.withPasswordProtection(() => this.handleSave(index))}
-                                ?disabled=${this.loading}
-                              >
-                                <i class="fas fa-save"></i> 儲存
-                              </button>
-                              <button class="btn-icon" 
-                                @click=${this.handleCancel}
-                                ?disabled=${this.loading}
-                              >
-                                <i class="fas fa-times"></i>
-                              </button>
-                            ` :
-                            html`
-                              <button class="btn-icon btn-edit" 
-                                @click=${() => this.withPasswordProtection(() => this.handleEdit(index))}
-                                ?disabled=${this.loading}
-                              >
-                                <i class="fas fa-edit"></i>
-                              </button>
-                              <button class="btn-icon btn-delete" 
-                                @click=${() => this.withPasswordProtection(() => this.handleDelete(index))}
-                                ?disabled=${this.loading}
-                              >
-                                <i class="fas fa-trash-alt"></i>
-                              </button>
-                            `}
-                        </div>
-                        ${this.editingIndex === index ?
-                          html`<div class="error-message"></div>` : ''}
-                      </div>
-                    </td>` : ''}
                   </tr>
                 `)}
               </tbody>
