@@ -21,6 +21,8 @@ export class Tabs extends LitElement {
       --md-sys-color-primary: #6750A4;
       --md-sys-color-on-surface-variant: #49454F;
       --md-sys-color-surface-container-highest: #E7E0EC;
+      display: block;
+      width: 100%;
     }
 
     .tab-header {
@@ -63,8 +65,16 @@ export class Tabs extends LitElement {
     }
 
     .tab-content {
+      display: block;
+      width: 100%;
       padding: 16px 24px;
       border-radius: 0 0 16px 16px;
+      box-sizing: border-box;
+    }
+
+    ::slotted(*) {
+      display: block;
+      width: 100%;
     }
   `;
 
@@ -88,9 +98,13 @@ export class Tabs extends LitElement {
       </div>
       
       <div class="tab-content">
-        <slot name="tab-${this.selectedIndex}"></slot>
+        <slot name="tab-${this.selectedIndex}" @slotchange=${this._handleSlotChange}></slot>
       </div>
     `;
+  }
+
+  _handleSlotChange(e) {
+    this.requestUpdate();
   }
 
   selectTab(index) {

@@ -62,9 +62,10 @@ export class DataTable extends LitElement {
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
       color: var(--text-color);
       padding: 1.5rem;
-      max-width: 1200px;
       margin: 0 auto;
       overflow-x: auto;
+      width: 100%;
+      box-sizing: border-box;
       
       /* 更新配色方案 */
       --primary-color: #4f46e5;
@@ -85,9 +86,9 @@ export class DataTable extends LitElement {
     }
 
     h2 {
+      margin-top: 0;
       font-size: 1.5rem;
       font-weight: 600;
-      margin-bottom: 1.5rem;
       color: var(--text-color);
     }
 
@@ -1317,6 +1318,24 @@ export class DataTable extends LitElement {
 
   async connectedCallback() {
     super.connectedCallback();
+    // 確保元件在DOM樹中完全連接後再初始化
+    await new Promise(resolve => {
+      if (this.isConnected) {
+        resolve();
+      } else {
+        // 如果尚未連接，等待連接
+        const observer = new MutationObserver((mutations, obs) => {
+          if (this.isConnected) {
+            resolve();
+            obs.disconnect();
+          }
+        });
+        observer.observe(document.body, { childList: true, subtree: true });
+        // 以防萬一，設置一個超時
+        setTimeout(resolve, 1000);
+      }
+    });
+
     await this.fetchSchemaAndData();
   }
 
