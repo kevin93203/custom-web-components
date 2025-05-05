@@ -851,9 +851,13 @@ export class DataTable extends LitElement {
             <input
               type="number"
               .value=${value !== null ? value : ''}
-              @input=${e => this.handleInput(key, e)}
+              @input=${e => {
+                this.handleInput(key, e);
+                this.adjustNumberInputWidth(e.target);
+              }}
               min=${field.min !== undefined ? field.min : ''}
               max=${field.max !== undefined ? field.max : ''}
+              style="width: ${this.calculateNumberWidth(value)}ch;"
               ...=${commonProps}
             />
             ${html`<div class="error-message">${field.required && (value === null || value === '') ? `${field.label}為必填欄位`:``}</div>`}
@@ -920,7 +924,7 @@ export class DataTable extends LitElement {
               .value=${value !== null ? value : ''}
               @input=${e => this.handleInput(key, e)}
               maxlength=${field.maxLength || ''}
-              size=${value.length || 1}
+              size=${String(value).length || 1}
               ...=${commonProps}
             />
             ${html`<div class="error-message">${field.required && (value === null || value === '') ? `${field.label}為必填欄位`:``}</div>`}
@@ -1314,6 +1318,24 @@ export class DataTable extends LitElement {
   async connectedCallback() {
     super.connectedCallback();
     await this.fetchSchemaAndData();
+  }
+
+  // 計算數字輸入框的寬度
+  calculateNumberWidth(value) {
+    if (value === null || value === '') return 8; // 預設最小寬度
+    
+    const strValue = String(value);
+    // 根據數字長度計算寬度：包含數字本身、小數點、負號，再加上一些內邊距空間
+    const baseWidth = strValue.length;
+    const extraSpace = 3; // 為了美觀和使用體驗增加一些額外空間
+    
+    return baseWidth + extraSpace;
+  }
+
+  // 動態調整數字輸入框的寬度
+  adjustNumberInputWidth(input) {
+    const value = input.value;
+    input.style.width = `${this.calculateNumberWidth(value)}ch`;
   }
 }
 
