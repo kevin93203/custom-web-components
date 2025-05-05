@@ -23,6 +23,7 @@ export class DataTable extends LitElement {
     schemaEndpoint: { type: String },
     isPasswordProtected: { type: Boolean },
     passwordVerified: { type: Boolean },
+    password: { type: String },
     filterColumn: { type: String },
   };
 
@@ -855,7 +856,7 @@ export class DataTable extends LitElement {
       ).join(',')
     ).join('\n');
 
-    const csvContent = `${headers}\n${rows}`;
+    const csvContent = `\uFEFF${headers}\n${rows}`;
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
