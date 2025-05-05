@@ -101,5 +101,94 @@
       "type": "textarea",
       "id": "f3a2"
     }
+  ],
+  "products": [
+    {
+      "id": "P1001",
+      "name": "無線藍牙耳機",
+      "category": "電子產品",
+      "price": 1299,
+      "stock": 45,
+      "rating": 4.5,
+      "releaseDate": "2025-03-15",
+      "isFeatured": true
+    },
+    {
+      "id": "P1002",
+      "name": "機械鍵盤",
+      "category": "電腦周邊",
+      "price": 2490,
+      "stock": 12,
+      "rating": 4.8,
+      "releaseDate": "2024-11-20",
+      "isFeatured": true
+    },
+    {
+      "id": "P1003",
+      "name": "智能手錶",
+      "category": "穿戴裝置",
+      "price": 3599,
+      "stock": 8,
+      "rating": 4.2,
+      "releaseDate": "2025-01-10",
+      "isFeatured": false
+    }
+  ],
+  "products_schema": [
+    {
+      "key": "id",
+      "type": "string",
+      "label": "產品ID",
+      "required": true,
+      "id": "p1"
+    },
+    {
+      "key": "name",
+      "type": "string",
+      "label": "產品名稱",
+      "required": true,
+      "id": "p2"
+    },
+    {
+      "key": "category",
+      "type": "select",
+      "label": "分類",
+      "options": ["電子產品", "電腦周邊", "穿戴裝置"],
+      "id": "p3"
+    },
+    {
+      "key": "price",
+      "type": "number",
+      "label": "價格",
+      "min": 0,
+      "id": "p4"
+    },
+    {
+      "key": "stock",
+      "type": "number",
+      "label": "庫存",
+      "min": 0,
+      "id": "p5"
+    },
+    {
+      "key": "rating",
+      "type": "number",
+      "label": "評分",
+      "min": 0,
+      "max": 5,
+      "id": "p6"
+    },
+    {
+      "key": "releaseDate",
+      "type": "date",
+      "label": "上市日期",
+      "id": "p7"
+    },
+    {
+      "key": "isFeatured",
+      "type": "boolean",
+      "label": "精選商品",
+      "id": "p8"
+    }
   ]
 }
