@@ -1210,36 +1210,40 @@ class DataTable extends LitElement {
                       </td>
                     `)}
                     ${showControls ? html`<td>
-                      <div class="actions">
+                      <div class="field">
+                        <div class="actions">
+                          ${this.editingIndex === index ?
+                            html`
+                              <button class="btn-primary" 
+                                @click=${() => this.withPasswordProtection(() => this.handleSave(index))}
+                                ?disabled=${this.loading}
+                              >
+                                <i class="fas fa-save"></i> 儲存
+                              </button>
+                              <button class="btn-icon" 
+                                @click=${this.handleCancel}
+                                ?disabled=${this.loading}
+                              >
+                                <i class="fas fa-times"></i>
+                              </button>
+                            ` :
+                            html`
+                              <button class="btn-icon btn-edit" 
+                                @click=${() => this.withPasswordProtection(() => this.handleEdit(index))}
+                                ?disabled=${this.loading}
+                              >
+                                <i class="fas fa-edit"></i>
+                              </button>
+                              <button class="btn-icon btn-delete" 
+                                @click=${() => this.withPasswordProtection(() => this.handleDelete(index))}
+                                ?disabled=${this.loading}
+                              >
+                                <i class="fas fa-trash-alt"></i>
+                              </button>
+                            `}
+                        </div>
                         ${this.editingIndex === index ?
-                          html`
-                            <button class="btn-primary" 
-                              @click=${() => this.withPasswordProtection(() => this.handleSave(index))}
-                              ?disabled=${this.loading}
-                            >
-                              <i class="fas fa-save"></i> 儲存
-                            </button>
-                            <button class="btn-icon" 
-                              @click=${this.handleCancel}
-                              ?disabled=${this.loading}
-                            >
-                              <i class="fas fa-times"></i>
-                            </button>
-                          ` :
-                          html`
-                            <button class="btn-icon btn-edit" 
-                              @click=${() => this.withPasswordProtection(() => this.handleEdit(index))}
-                              ?disabled=${this.loading}
-                            >
-                              <i class="fas fa-edit"></i>
-                            </button>
-                            <button class="btn-icon btn-delete" 
-                              @click=${() => this.withPasswordProtection(() => this.handleDelete(index))}
-                              ?disabled=${this.loading}
-                            >
-                              <i class="fas fa-trash-alt"></i>
-                            </button>
-                          `}
+                          html`<div class="error-message"></div>` : ''}
                       </div>
                     </td>` : ''}
                   </tr>
