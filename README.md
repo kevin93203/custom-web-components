@@ -1,10 +1,14 @@
-# DataTable Web Component
+# DataTable & Tabs Web Components
 
-A highly customizable and feature-rich data table web component built with Lit. This component provides a modern, responsive, and interactive way to display and manage tabular data with built-in features for sorting, filtering, pagination, and CRUD operations.
+A collection of highly customizable web components built with Lit. This project provides modern, responsive, and interactive UI components for displaying tabular data and tabbed interfaces.
 
-## Features
+## Components
 
-- 🔍 Advanced filtering with field-specific search
+### DataTable
+
+A feature-rich data table component with the following features:
+
+- 🔍 Advanced filtering with field-specific search and complex operators for numeric fields
 - ↕️ Column sorting (ascending/descending)
 - 📄 Pagination with configurable page size
 - ✏️ CRUD operations (Create, Read, Update, Delete)
@@ -15,6 +19,15 @@ A highly customizable and feature-rich data table web component built with Lit. 
 - 🎨 Customizable styling with CSS variables
 - 🌐 Dynamic schema support
 - 📝 Support for various input types (text, number, date, boolean, select, textarea)
+
+### Tabs
+
+A modern tabbed interface component with the following features:
+
+- 📑 Dynamic tab creation based on provided headers
+- 🔄 Simple slot-based content system
+- 🎨 Material Design inspired styling
+- 🖱️ Smooth tab switching with visual feedback
 
 ## Installation
 
@@ -28,17 +41,15 @@ A highly customizable and feature-rich data table web component built with Lit. 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
 ```
 
-3. Copy the `DataTable.js` file to your project directory.
+3. Copy the component files to your project directory.
 
 ## Usage
 
-1. Import the component in your HTML file:
-```html
-<script type="module" src="./DataTable.js"></script>
-```
+### DataTable
 
-2. Use the component in your HTML:
 ```html
+<script type="module" src="./data-table.js"></script>
+
 <data-table 
   table-title="Users"
   base-api-url="http://localhost:3000"
@@ -53,13 +64,25 @@ A highly customizable and feature-rich data table web component built with Lit. 
 ></data-table>
 ```
 
-## Configuration
+### Tabs
+
+```html
+<script type="module" src="./tabs.js"></script>
+
+<custom-tabs headers='["Tab 1", "Tab 2", "Tab 3"]'>
+  <div slot="tab-0">Content for Tab 1</div>
+  <div slot="tab-1">Content for Tab 2</div>
+  <div slot="tab-2">Content for Tab 3</div>
+</custom-tabs>
+```
+
+## DataTable Configuration
 
 ### Attributes
 
 | Attribute | Type | Description | Default |
 |-----------|------|-------------|---------|
-| table-title | String | Table title displayed at the top | "DataTable" |
+| table-title | String | Table title displayed at the top | "資料表" |
 | base-api-url | String | Base URL for API endpoints | - |
 | list-endpoint | String | Endpoint for fetching data | - |
 | create-endpoint | String | Endpoint for creating records | - |
@@ -102,28 +125,58 @@ The schema should be an array of objects with the following structure:
 - select
 - textarea
 
+## Tabs Configuration
+
+### Attributes
+
+| Attribute | Type | Description |
+|-----------|------|-------------|
+| headers | Array (JSON string) | Array of tab titles |
+
+### Slots
+
+Use `slot="tab-X"` where X is the zero-based index of the tab to assign content to specific tabs.
+
 ## API Requirements
 
-The component expects the following API endpoints:
+The components expect the following API endpoints:
 
-### GET /schema
+### GET /schema_endpoint
 Returns the schema definition for the table.
 
-### GET /data
+### GET /list_endpoint
 Returns an array of data objects.
 
-### POST /data
+### POST /create_endpoint
 Creates a new record. Request body contains the record data.
 
-### PUT /data/:id
+### PUT /update_endpoint/:id
 Updates an existing record. Request body contains the updated record data.
 
-### DELETE /data/:id
+### DELETE /delete_endpoint/:id
 Deletes a record by ID.
+
+## Advanced Features
+
+### Advanced Filtering
+
+The DataTable component supports complex filtering operations for numeric fields:
+
+- Greater than: `>value`
+- Less than: `<value`
+- Greater than or equal: `>=value`
+- Less than or equal: `<=value`
+- Range: `min-max`
+
+### Password Protection
+
+Enable the `protected` attribute to require password verification before allowing CRUD operations.
 
 ## Styling
 
-The component uses CSS custom properties for styling. You can override these properties to customize the appearance:
+The components use CSS custom properties for styling. You can override these properties to customize the appearance:
+
+### DataTable
 
 ```css
 data-table {
@@ -141,13 +194,34 @@ data-table {
 }
 ```
 
+### Tabs
+
+```css
+custom-tabs {
+  --md-sys-color-primary: #6750A4;
+  --md-sys-color-on-surface-variant: #49454F;
+  --md-sys-color-surface-container-highest: #E7E0EC;
+}
+```
+
 ## Browser Support
 
-This component uses modern web technologies and is supported in all modern browsers that support:
+These components use modern web technologies and are supported in all modern browsers that support:
 - Custom Elements v1
 - Shadow DOM v1
 - ES2015 (ES6)
 - CSS Custom Properties
+
+## Development
+
+This project uses [JSON Server](https://github.com/typicode/json-server) for local API development. The example data and schema are provided in the `db.json` file.
+
+To start the development server:
+
+```bash
+npm install -g json-server
+json-server --watch db.json
+```
 
 ## License
 
