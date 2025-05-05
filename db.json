@@ -35,14 +35,14 @@
     {
       "key": "id",
       "label": "編號",
-      "type": "text",
+      "type": "string",
       "hidden": true,
       "id": "0deb"
     },
     {
       "key": "name",
       "label": "姓名",
-      "type": "text",
+      "type": "string",
       "required": true,
       "description": "使用者姓名",
       "id": "7822"
@@ -98,7 +98,7 @@
     {
       "key": "comment",
       "label": "備註",
-      "type": "textarea",
+      "type": "text",
       "id": "f3a2"
     }
   ],

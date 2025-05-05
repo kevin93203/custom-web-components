@@ -101,7 +101,7 @@ The schema should be an array of objects with the following structure:
 {
   "key": "fieldName",
   "label": "Field Label",
-  "type": "text",
+  "type": "select",
   "required": true,
   "description": "Field description",
   "hidden": false,
@@ -117,13 +117,13 @@ The schema should be an array of objects with the following structure:
 
 ### Supported Field Types
 
-- text
+- string
 - number
 - email
 - boolean
 - date
 - select
-- textarea
+- text
 
 ## Tabs Configuration
 

@@ -904,7 +904,7 @@ export class DataTable extends LitElement {
             ${html`<div class="error-message">${field.required && (value === null || value === '') ? `${field.label}為必填欄位`:``}</div>`}
           </div>
         `;
-      case 'textarea':
+      case 'text':
         return html`
           <div class="field">
             <textarea
@@ -916,7 +916,7 @@ export class DataTable extends LitElement {
             ${html`<div class="error-message">${field.required && (value === null || value === '') ? `${field.label}為必填欄位`:``}</div>`}
           </div>
         `;
-      default: // text, email, etc.
+      default: // string, email, etc.
         return html`
           <div class="field">
             <input
@@ -935,13 +935,13 @@ export class DataTable extends LitElement {
 
   renderTypeIcon(type) {
     const icons = {
-      'text': html`<i class="fas fa-font"></i>`,
+      'string': html`<i class="fas fa-font"></i>`,
       'number': html`<i class="fas fa-hashtag"></i>`,
       'email': html`<i class="fas fa-envelope"></i>`,
       'boolean': html`<i class="fas fa-check-circle"></i>`,
       'date': html`<i class="fas fa-calendar-day"></i>`,
       'select': html`<i class="fas fa-caret-down"></i>`,
-      'textarea': html`<i class="fas fa-align-left"></i>`
+      'text': html`<i class="fas fa-align-left"></i>`
     };
     return icons[type] || '';
   }
@@ -1202,7 +1202,7 @@ export class DataTable extends LitElement {
                           html`${this.renderInputField(field, this.editingRow[field.key], this.loading)}` :
                           field.type === 'boolean'
                             ? (row[field.key] ? html`<i class="fas fa-check text-success"></i>` : html`<i class="fas fa-times text-danger"></i>`)
-                            : field.type === 'textarea'
+                            : field.type === 'text'
                               ? html`<div class="multiline-text">${row[field.key]}</div>`
                               : field.type === 'select'
                                 ? html`${field.options.find(opt => opt.value === row[field.key])?.label || row[field.key]}`
