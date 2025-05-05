@@ -1,6 +1,6 @@
 import { LitElement, html, css } from 'https://cdn.jsdelivr.net/gh/lit/dist@3/core/lit-core.min.js';
 
-class DataTable extends LitElement {
+export class DataTable extends LitElement {
   static properties = {
     tableTitle: { type: String },
     data: { type: Array },
