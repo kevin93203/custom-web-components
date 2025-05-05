@@ -1063,7 +1063,7 @@ class DataTable extends LitElement {
           <input 
             type="text" 
             .value=${this.filterText} 
-            @input=${e => !this.loading && (this.filterText = e.target.value)}
+            @input=${e => !this.loading && (this.filterText = e.target.value, this.currentPage = 1)}
             placeholder=${this.getSearchPlaceholder()}
             ?disabled=${this.loadingOrEditing}
           />
