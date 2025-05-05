@@ -1142,6 +1142,7 @@ export class DataTable extends LitElement {
 
   // 截斷字串
   truncateString(str, maxLength) {
+    if (!str) return '';
     return str.length > maxLength ? `${str.slice(0, maxLength)}...` : str;
   }
 
@@ -1255,13 +1256,13 @@ export class DataTable extends LitElement {
                             html`
                               <button class="btn-icon btn-delete" 
                                 @click=${() => this.withPasswordProtection(() => this.handleDelete(index))}
-                                ?disabled=${this.loading}
+                                ?disabled=${this.loadingOrEditing}
                               >
                                 <i class="fas fa-trash-alt"></i>
                               </button>
                               <button class="btn-icon btn-edit" 
                                 @click=${() => this.withPasswordProtection(() => this.handleEdit(index))}
-                                ?disabled=${this.loading}
+                                ?disabled=${this.loadingOrEditing}
                               >
                                 <i class="fas fa-edit"></i>
                               </button>
