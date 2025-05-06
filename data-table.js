@@ -723,6 +723,13 @@ export class DataTable extends LitElement {
       });
     }
 
+    // Convert empty string to null for select fields
+    this.schema.forEach(field => {
+      if (field.type === 'select' && row[field.key] === '') {
+        row[field.key] = null;
+      }
+    });
+
     // Validate required fields
     const missingFields = this.schema
       .filter(field => field.required && field.editable !== false && (row[field.key] === null || row[field.key] === ''))
