@@ -25,6 +25,7 @@ export class DataTable extends LitElement {
     passwordVerified: { type: Boolean },
     password: { type: String },
     filterColumn: { type: String },
+    truncateMaxLength: { type: Number },
   };
 
   constructor() {
@@ -44,7 +45,8 @@ export class DataTable extends LitElement {
     this.isPasswordProtected = this.hasAttribute('protected');
     this.passwordVerified = !this.isPasswordProtected;
     this.password = this.getAttribute('password') || '123456';
-    this.filterColumn = ''; // 新增搜尋欄位屬性
+    this.filterColumn = '';
+    this.truncateMaxLength = 50; 
 
     // Initialize API configuration from attributes
     this.apiConfig = {
@@ -1298,7 +1300,7 @@ export class DataTable extends LitElement {
                           field.type === 'boolean'
                             ? (row[field.key] ? html`<i class="fas fa-check text-success"></i>` : html`<i class="fas fa-times text-danger"></i>`)
                             : field.type === 'text'
-                              ? html`<pre>${this.truncateString(row[field.key], 30)}</pre>`
+                              ? html`<pre>${this.truncateString(row[field.key], this.truncateMaxLength)}</pre>`
                               : field.type === 'select'
                                 ? html`${field.options.find(opt => opt.value === row[field.key])?.label || row[field.key]}`
                                 : (row[field.key] !== null ? row[field.key] : '')}
