@@ -950,8 +950,12 @@ export class DataTable extends LitElement {
           <div class="field">
             <textarea
               .value=${value !== null ? value : ''}
-              @input=${e => this.handleInput(key, e)}
+              @input=${e => {
+                this.handleInput(key, e);
+                this.adjustTextareaWidth(e.target);
+              }}
               rows=${field.rows || 3}
+              style="width: ${this.calculateTextareaWidth(value)}ch; ${!isEditable ? 'background-color: var(--disabled-color); cursor: not-allowed;' : ''}"
               ...=${commonProps}
             ></textarea>
             ${html`<div class="error-message">${field.required && (value === null || value === '') ? `${field.label}為必填欄位`:``}</div>`}
@@ -1294,7 +1298,7 @@ export class DataTable extends LitElement {
                           field.type === 'boolean'
                             ? (row[field.key] ? html`<i class="fas fa-check text-success"></i>` : html`<i class="fas fa-times text-danger"></i>`)
                             : field.type === 'text'
-                              ? html`${this.truncateString(row[field.key], 30)}`
+                              ? html`<pre>${this.truncateString(row[field.key], 30)}</pre>`
                               : field.type === 'select'
                                 ? html`${field.options.find(opt => opt.value === row[field.key])?.label || row[field.key]}`
                                 : (row[field.key] !== null ? row[field.key] : '')}
@@ -1414,6 +1418,27 @@ export class DataTable extends LitElement {
   adjustNumberInputWidth(input) {
     const value = input.value;
     input.style.width = `${this.calculateNumberWidth(value)}ch`;
+  }
+
+  // 計算文本區域的寬度
+  calculateTextareaWidth(value) {
+    if (value === null || value === '') return 40; // 預設最小寬度
+    
+    // 找出最長的行並計算其寬度
+    const lines = String(value).split('\n');
+    const maxLineLength = Math.max(...lines.map(line => line.length));
+    
+    // 根據最長行的長度計算寬度，並確保有合理的最小和最大寬度
+    const minWidth = 40; // 最小寬度
+    const maxWidth = 80; // 最大寬度
+    
+    return Math.min(Math.max(maxLineLength + 5, minWidth), maxWidth);
+  }
+
+  // 動態調整文本區域的寬度
+  adjustTextareaWidth(textarea) {
+    const value = textarea.value;
+    textarea.style.width = `${this.calculateTextareaWidth(value)}ch`;
   }
 }
 
